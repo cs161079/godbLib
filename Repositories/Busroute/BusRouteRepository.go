@@ -3,8 +3,9 @@ package Busroute
 import (
 	"errors"
 	"fmt"
-	models "godbLib/Models"
-	db "godbLib/Repositories"
+
+	models "github.com/cs161079/godbLib/Models"
+	db "github.com/cs161079/godbLib/Repositories"
 
 	"gorm.io/gorm"
 )

@@ -2,7 +2,8 @@ package db
 
 import (
 	"fmt"
-	models "godbLib/Models"
+
+	models "github.com/cs161079/godbLib/Models"
 )
 
 func SequenceGetNextVal(seq_name string) int64 {

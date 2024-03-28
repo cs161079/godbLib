@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	logger "godbLib/Utils/goLogger"
+	logger "github.com/cs161079/godbLib/Utils/goLogger"
 
 	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
