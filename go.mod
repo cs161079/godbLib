@@ -13,5 +13,6 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/t-tomalak/logrus-easy-formatter v0.0.0-20190827215021-c074f06c5816
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 )

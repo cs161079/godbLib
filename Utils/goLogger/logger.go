@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/sirupsen/logrus"
-	log "github.com/sirupsen/logrus"
+	logger "github.com/sirupsen/logrus"
+	easy "github.com/t-tomalak/logrus-easy-formatter"
 	gormlogger "gorm.io/gorm/logger"
 )
 
@@ -20,10 +20,17 @@ const (
 	rootLogsDirpath = "C:\\oasa-telematics"
 )
 
-var Logger *logrus.Logger
+var Logger *logger.Logger
 
 func InitLogger(applicationName string) {
-	Logger = logrus.New()
+	Logger = &logger.Logger{
+		Out:   os.Stderr,
+		Level: logger.InfoLevel,
+		Formatter: &easy.Formatter{
+			TimestampFormat: "2006-01-02 15:04:05",
+			LogFormat:       "[%lvl%]: %time% - %msg%",
+		},
+	}
 	directoryPath := filepath.Join(rootLogsDirpath, applicationName)
 	err := os.Mkdir(directoryPath, 0777)
 	if err != nil {
@@ -48,8 +55,8 @@ func INFO(str string) {
 }
 
 func ERROR(str string) {
-	Logger.SetLevel(logrus.ErrorLevel)
-	Logger.Println(str)
+	Logger.SetLevel(logger.ErrorLevel)
+	Logger.Error(str)
 }
 
 // LogMode set log mode
@@ -63,7 +70,7 @@ func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 func (l GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Info {
 		// Logger.Infof(str, args...)
-		log.WithFields(log.Fields{
+		logger.WithFields(logger.Fields{
 			"at": time.Now().Format("2006-01-02 15:04:05"),
 		}).Infof(str, args)
 	}
@@ -73,7 +80,7 @@ func (l GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
 func (l GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Warn {
 		// Logger.Warnf(str, args...)
-		log.WithFields(log.Fields{
+		logger.WithFields(logger.Fields{
 			"at": time.Now().Format("2006-01-02 15:04:05"),
 		}).Warnf(str, args)
 	}
@@ -84,7 +91,7 @@ func (l GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
 func (l GormLogger) Error(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Error {
 		// Logger.Errorf(str, args...)
-		log.WithFields(log.Fields{
+		logger.WithFields(logger.Fields{
 			"at": time.Now().Format("2006-01-02 15:04:05"),
 		}).Infof(str, args)
 	}
