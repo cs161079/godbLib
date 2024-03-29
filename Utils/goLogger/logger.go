@@ -36,7 +36,7 @@ func InitLogger(applicationName string) {
 	if err != nil {
 		fmt.Printf("error create directory file: %v\n", err)
 	}
-	fmt.Printf("Folder create succefully for logs....")
+	fmt.Println("Folder create succefully for logs....")
 	var runMode = os.Getenv("application.mode")
 	if runMode == "PROD" {
 		fileName := filepath.Join(rootLogsDirpath, applicationName, "opswlog.log")
@@ -51,12 +51,12 @@ func InitLogger(applicationName string) {
 }
 
 func INFO(str string) {
-	Logger.Println(str)
+	Logger.Println(fmt.Sprintf("%s\n", str))
 }
 
 func ERROR(str string) {
 	Logger.SetLevel(logger.ErrorLevel)
-	Logger.Error(str)
+	Logger.Error(fmt.Sprintf("%s\n", str))
 }
 
 // LogMode set log mode
