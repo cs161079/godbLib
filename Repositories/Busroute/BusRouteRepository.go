@@ -1,7 +1,6 @@
 package Busroute
 
 import (
-	"errors"
 	"fmt"
 
 	models "github.com/cs161079/godbLib/Models"
@@ -19,27 +18,19 @@ func SelectByRouteCode(routeCode int32) (*models.BusRoute, error) {
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			//oasaLogger.Logger.Infof("Bus Route Not Found [route_code: %d].\n", routeCode)
-			return nil, errors.New(fmt.Sprintf("Bus Route Not Found [route_code: %d].\n", routeCode))
+			return nil, fmt.Errorf("BUS ROUTE NOT FOUND [ROUTE_CODE: %d].", routeCode)
 		}
 	}
 	return &selectedVal, nil
 }
 
-func SelectRouteByLineCode(line_code int32) []models.BusRoute {
+func SelectRouteByLineCode(line_code int32) (*[]models.BusRoute, error) {
 	var selectedVal []models.BusRoute
 	r := db.DB.Table("BUSROUTE").Where("line_code = ?", line_code).Find(&selectedVal)
-	if r != nil {
-		if r.Error != nil {
-			fmt.Println(r.Error.Error())
-			return nil
-		}
-		//if r.RowsAffected == 0 {
-		//	fmt.Println("Bus Routes Not Found [li: %d].")
-		//	return nil
-		//}
+	if r.Error != nil {
+		return nil, r.Error
 	}
-	return selectedVal
+	return &selectedVal, nil
 }
 
 func Save(input models.BusRoute) error {
@@ -50,8 +41,11 @@ func Save(input models.BusRoute) error {
 	isNew := selectedBusLine == nil
 	var r *gorm.DB = nil
 	if isNew {
-		input.Id = db.SequenceGetNextVal(models.BUSROUTE_SEQ)
-		//input.Line_descr = input.Line_descr + " New"
+		newId, err := db.SequenceGetNextVal(models.BUSROUTE_SEQ)
+		if err != nil {
+			return err
+		}
+		input.Id = *newId
 		r = db.DB.Table("BUSROUTE").Create(&input)
 
 	} else {
@@ -66,18 +60,13 @@ func Save(input models.BusRoute) error {
 
 }
 
-func BusRouteList01() []models.BusRoute {
+func BusRouteList01() ([]models.BusRoute, error) {
 	var result []models.BusRoute
 	r := db.DB.Table("BUSROUTE").Order("route_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
-			fmt.Println(r.Error.Error())
-			return nil
+			return nil, r.Error
 		}
-		//if r.RowsAffected == 0 {
-		//	fmt.Println("Record does not exist!!!")
-		//	return nil
-		//}
 	}
-	return result
+	return result, nil
 }

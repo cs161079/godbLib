@@ -1,4 +1,4 @@
-package Busline
+package BuslineRepository
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const erroMessageTemplate = "Field validation for [%s] failed on the [%s] tag"
+//const erroMessageTemplate = "Field validation for [%s] failed on the [%s] tag"
 
 type OpswValidateError struct {
 	Key     string
@@ -41,8 +41,11 @@ func SaveBusLine(input models.Busline) error {
 	isNew := selectedBusLine == nil
 	var r *gorm.DB = nil
 	if isNew {
-		input.Id = db.SequenceGetNextVal(models.BUSLINE_SEQ)
-		//input.Line_descr = input.Line_descr + " New"
+		newId, err := db.SequenceGetNextVal(models.BUSLINE_SEQ)
+		if err != nil {
+			return err
+		}
+		input.Id = *newId
 		r = db.DB.Table("BUSLINE").Create(&input)
 
 	} else {
@@ -62,13 +65,8 @@ func BuslineList01() ([]models.Busline, error) {
 	r := db.DB.Table("BUSLINE").Order("line_id, line_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
-			fmt.Println(r.Error.Error())
 			return nil, r.Error
 		}
-		//if r.RowsAffected == 0 {
-		//	fmt.Println("Record does not exist!!!")
-		//	return nil
-		//}
 	}
 	return result, nil
 }
@@ -98,10 +96,6 @@ func BuslineListBymlcode(mlcode int16) ([]models.Busline, error) {
 			fmt.Println(r.Error.Error())
 			return nil, r.Error
 		}
-		//if r.RowsAffected == 0 {
-		//	fmt.Println("Record does not exist!!!")
-		//	return nil
-		//}
 	}
 	return result, nil
 

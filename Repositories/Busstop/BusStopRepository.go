@@ -32,16 +32,15 @@ func Save(busStop models.BusStop) error {
 	isNew := selectedBusStop == nil
 	var r *gorm.DB = nil
 	if isNew {
-		//oasaLogger.INFO(fmt.Sprintf("Bus Stop not found [stop_code: %d]. Create New.\n", busStop.Stop_code))
-		busStop.Id = db.SequenceGetNextVal(models.BUSSTOP_SEQ)
-		//input.Line_descr = input.Line_descr + " New"
-
+		newId, err := db.SequenceGetNextVal(models.BUSSTOP_SEQ)
+		if err != nil {
+			return err
+		}
+		busStop.Id = *newId
 		r = db.DB.Table("BUSSTOP").Create(&busStop)
 
 	} else {
-		//oasaLogger.INFO(fmt.Sprintf("Bus Stop [stop_code: %d]. Updated.\n", busStop))
 		busStop.Id = selectedBusStop.Id
-		//input.Line_descr = input.Line_descr + " Update"
 		r = db.DB.Table("BUSSTOP").Save(&busStop)
 	}
 	if r.Error != nil {
@@ -50,7 +49,7 @@ func Save(busStop models.BusStop) error {
 	return nil
 }
 
-func StopList01(routeCode int32) ([]models.StopDto, error) {
+func StopList01(routeCode int32) (*[]models.StopDto, error) {
 	var result []models.StopDto
 	r := db.DB.Table("BUSSTOP").
 		Select("BUSSTOP.*, "+
@@ -58,8 +57,7 @@ func StopList01(routeCode int32) ([]models.StopDto, error) {
 		Joins("LEFT JOIN BUSROUTESTOPS ON BUSSTOP.stop_code=BUSROUTESTOPS.stop_code").
 		Where("BUSROUTESTOPS.route_code=?", routeCode).Order("senu").Find(&result)
 	if r.Error != nil {
-		//oasaLogger.ERROR(r.Error.Error())
 		return nil, r.Error
 	}
-	return result, nil
+	return &result, nil
 }
