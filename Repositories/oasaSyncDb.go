@@ -7,6 +7,7 @@ import (
 	"time"
 
 	logger "github.com/cs161079/godbLib/Utils/goLogger"
+	"github.com/joho/godotenv"
 
 	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
@@ -34,12 +35,15 @@ func (ds DataSource) DatasourceUrl() string {
 }
 
 func getDataSource() (*DataSource, error) {
-	// err := godotenv.Load()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	var ip = os.Getenv("database.ip")
+	err := godotenv.Load("enviroment.env")
+	if err != nil {
+		return nil, err
+	}
+	ip := os.Getenv("database.ip")
 	port, err := strconv.ParseInt(os.Getenv("database.port"), 10, 32)
+	user := os.Getenv("database.user")
+	password := os.Getenv("database.password")
+	database := os.Getenv("database.dbname")
 	if err != nil {
 		return nil, err
 	}
@@ -47,9 +51,9 @@ func getDataSource() (*DataSource, error) {
 	return &DataSource{
 		Address:      &ip,
 		Port:         &port32,
-		User:         "user1",
-		Password:     "user1password",
-		DatabaseName: "oasaDb",
+		User:         user,
+		Password:     password,
+		DatabaseName: database,
 	}, nil
 }
 
