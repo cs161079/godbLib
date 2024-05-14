@@ -23,11 +23,10 @@ func SelectByLineCode(lineCode int64) (*models.Busline, error) {
 	r := db.DB.Table("BUSLINE").Where("line_code = ?", lineCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
-			fmt.Println(r.Error.Error())
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			logger.INFO(fmt.Sprintf("Bus line not found. [line_code: %d].\n", lineCode))
+			logger.INFO(fmt.Sprintf("Bus line not found. [line_code: %d].", lineCode))
 			return nil, nil
 		}
 	}
