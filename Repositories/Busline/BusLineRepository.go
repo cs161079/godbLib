@@ -5,6 +5,7 @@ import (
 
 	models "github.com/cs161079/godbLib/Models"
 	db "github.com/cs161079/godbLib/Repositories"
+	logger "github.com/cs161079/godbLib/Utils/goLogger"
 
 	"gorm.io/gorm"
 )
@@ -16,17 +17,17 @@ type OpswValidateError struct {
 	Message string
 }
 
-func SelectByLineCode(line_code int64) (*models.Busline, error) {
+func SelectByLineCode(lineCode int64) (*models.Busline, error) {
 	//var selectedPtr *oasaSyncModel.Busline
 	var selectedVal models.Busline
-	r := db.DB.Table("BUSLINE").Where("line_code = ?", line_code).Find(&selectedVal)
+	r := db.DB.Table("BUSLINE").Where("line_code = ?", lineCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			fmt.Println(r.Error.Error())
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			fmt.Printf("Bus Line Not Found [line_code: %d].\n", line_code)
+			logger.INFO(fmt.Sprintf("Bus line not found. [line_code: %d].\n", lineCode))
 			return nil, nil
 		}
 	}
@@ -93,7 +94,6 @@ func BuslineListBymlcode(mlcode int16) ([]models.Busline, error) {
 	r := db.DB.Table("BUSLINE").Where("ml_code = ?", mlcode).Order("line_id, line_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
-			fmt.Println(r.Error.Error())
 			return nil, r.Error
 		}
 	}
