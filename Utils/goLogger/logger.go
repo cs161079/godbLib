@@ -54,6 +54,11 @@ func INFO(str string) {
 	Logger.Println(fmt.Sprintf("%s\n", str))
 }
 
+func WARN(str string) {
+	Logger.SetLevel(logger.DebugLevel)
+	Logger.Warn(fmt.Sprintf("%s\n", str))
+}
+
 func ERROR(str string) {
 	Logger.SetLevel(logger.ErrorLevel)
 	Logger.Error(fmt.Sprintf("%s\n", str))

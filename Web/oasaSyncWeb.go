@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	models "github.com/cs161079/godbLib/Models"
 	logger "github.com/cs161079/godbLib/Utils/goLogger"
 )
 
@@ -28,20 +29,23 @@ type OpswHttpRequest struct {
 }
 
 func getProperty(v interface{}, property string) any {
-	if reflect.TypeOf(v).Kind() == reflect.Slice {
-		return nil
-	} else {
-		result := v.(map[string]any)[property]
-		return result
+	if v != nil {
+		if reflect.TypeOf(v).Kind() == reflect.Slice {
+			return nil
+		} else {
+			result := v.(map[string]any)[property]
+			return result
+		}
 	}
+	return nil
 }
 
 func checkFields(request *OpswHttpRequest) error {
 	if request.Endpoint == "" {
-		return fmt.Errorf("REQUEST ENDPOINT IS NOT SET.")
+		return fmt.Errorf("REQUEST ENDPOINT IS NOT SET")
 	}
 	if request.Method == "" {
-		return fmt.Errorf("REQUEST HTTP METHOD IS NOT SET.")
+		return fmt.Errorf("REQUEST HTTP METHOD IS NOT SET")
 	}
 	return nil
 }
@@ -50,8 +54,8 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
-	if &request == nil {
-		return nil, fmt.Errorf("REQUEST OBJECT-STRUCT IS NIL OR IS NOT SET CORRECTLY.")
+	if request == nil {
+		return nil, fmt.Errorf("REQUEST OBJECT-STRUCT IS NIL OR IS NOT SET CORRECTLY")
 	}
 
 	err := checkFields(request)
@@ -74,7 +78,7 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.Path, response.StatusCode))
+	logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.String(), response.StatusCode))
 
 	return response, nil
 }
@@ -85,11 +89,10 @@ func getRequest(url string, headers map[string]string) (*http.Response, error) {
 	}
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		fmt.Errorf("got error %s", err.Error())
 		return nil, err
 	}
 
-	if headers != nil && len(headers) > 0 {
+	if len(headers) > 0 {
 		for key, value := range headers {
 			req.Header.Set(key, value)
 		}
@@ -100,7 +103,6 @@ func getRequest(url string, headers map[string]string) (*http.Response, error) {
 		return nil, errors.New(response.Status)
 	}
 	if err != nil {
-		fmt.Printf("error making http request: %s\n", err.Error())
 		return nil, err
 	}
 	//fmt.Printf("%s %d %s %s %s \n", time.Now().Format("2006-01-02 15:04:05"), response.StatusCode, strings.Split(url, "?")[1], req.Method, req.Host)
@@ -126,7 +128,7 @@ func TestRequestFunction() (*string, error) {
 	}
 
 	if response.StatusCode == http.StatusInternalServerError {
-		return nil, fmt.Errorf("INTERNAL SERVER ERROR")
+		return nil, fmt.Errorf(models.INTERNALL_SERVER_ERROR)
 	}
 
 	reader, err := io.ReadAll(response.Body)
@@ -154,7 +156,7 @@ func TestMakeRequest(action string) (*string, error) {
 		return nil, err
 	}
 	if response.StatusCode == http.StatusInternalServerError {
-		return nil, fmt.Errorf("INTERNAL SERVER ERROR")
+		return nil, fmt.Errorf(models.INTERNALL_SERVER_ERROR)
 	}
 	resp, err := io.ReadAll(response.Body)
 	if err != nil {
@@ -182,7 +184,7 @@ func MakeRequest(action string) (*string, error) {
 		return nil, err
 	}
 	if response.StatusCode == http.StatusInternalServerError {
-		return nil, fmt.Errorf("INTERNAL SERVER ERROR")
+		return nil, fmt.Errorf(models.INTERNALL_SERVER_ERROR)
 	}
 
 	reader, err := gzip.NewReader(response.Body)
@@ -205,7 +207,7 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 	var extraparamUrl string = ""
 	// keys := make([]int, len(extraParams))
 	for k := range extraParams {
-		extraparamUrl = extraparamUrl + "&" + k + "=" + strconv.FormatInt(int64(extraParams[k].(int32)), 10)
+		extraparamUrl = extraparamUrl + "&" + k + "=" + strconv.FormatInt(extraParams[k].(int64), 10)
 	}
 	var req OpswHttpRequest = OpswHttpRequest{
 		Method:   http.MethodGet,
@@ -213,35 +215,36 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 	}
 	//Error Code for error occured in Request Creation
 	response, err := httpRequest(&req)
-
 	if err != nil {
 		oasaResult.Error = err
-	} else {
-		if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
-			fmt.Println("Client Error Response from Server")
-			oasaResult.Error = fmt.Errorf("%s %s", response.Status, "Request contains bad syntax or cannot be fulfilled.")
-		} else if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
-			oasaResult.Error = fmt.Errorf("%s %s", response.Status, "Internal Server Error.")
-		} else {
-			responseBody, error := io.ReadAll(response.Body)
-			if error != nil {
-				oasaResult.Error = fmt.Errorf("AN ERROR OCCURED ANALYZE RESPONSE BODY. %s", error.Error())
-			} else {
-				var tmpResult interface{}
-				err := json.Unmarshal(responseBody, &tmpResult)
-				if err != nil {
-					oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
-				} else {
-					hasError := getProperty(tmpResult, "error")
-					if hasError != nil {
-						oasaResult.Error = fmt.Errorf("SERVER RESPONSES ERROR. %s", hasError)
-					} else {
-						oasaResult.Data = tmpResult
-					}
-				}
-			}
-		}
+		return &oasaResult
 	}
-
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED ANALYZE RESPONSE BODY. %s", err.Error())
+		return &oasaResult
+	}
+	if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
+		//fmt.Println("Client Error Response from Server")
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, "REQUEST CONTAINS BAD SYNTAX OR CANNOT BE FULLFILLED")
+		return &oasaResult
+	}
+	if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, models.INTERNALL_SERVER_ERROR)
+		//logger.ERROR(string(responseBody))
+		return &oasaResult
+	}
+	var tmpResult interface{}
+	err = json.Unmarshal(responseBody, &tmpResult)
+	if err != nil {
+		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
+		return &oasaResult
+	}
+	hasError := getProperty(tmpResult, "error")
+	if hasError != nil {
+		oasaResult.Error = fmt.Errorf("SERVER RESPONSES ERROR. %s", hasError)
+		return &oasaResult
+	}
+	oasaResult.Data = tmpResult
 	return &oasaResult
 }

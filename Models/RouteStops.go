@@ -1,0 +1,7 @@
+package models
+
+type RouteStops struct {
+	Route_code int32 `json:"routeCode" gorm:"primaryKey"`
+	Stop_code  int64 `json:"stopCode" gorm:"primaryKey"`
+	Senu       int16 `json:"senu" gorm:"primaryKey"`
+}

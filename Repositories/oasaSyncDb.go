@@ -22,7 +22,7 @@ type DataSource struct {
 	DatabaseName string
 }
 
-const dataSourceFormat = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local"
+const dataSourceFormat = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local"
 
 type DatasourceLink interface {
 	DatasourceUrl() (string, error)
