@@ -33,15 +33,15 @@ type ScheduleTimeOasa struct{}
 
 type ScheduleTimeDto struct {
 	//Line_Code  int64     `json:"line_code" oasa:"line_code"`
-	Start_Time time.Time `json:"start_time" oasa:"sde_start1" type:"time"`
-	Type       int8      `json:"type"`
+	Start_Time string `json:"start_time" oasa:"sde_start1" type:"time"`
+	Type       int8   `json:"type"`
 }
 
 type ScheduleTime struct {
-	Sdc_Code   int32     `json:"sdc_code" gorm:"primaryKey"`
-	Line_Code  int64     `json:"line_code" gorm:"primaryKey"`
-	Start_Time time.Time `json:"start_time" gorm:"primaryKey type:datetime"`
-	Type       int8      `json:"type" gorm:"primaryKey"`
+	Sdc_Code   int32  `json:"sdc_code" gorm:"primaryKey"`
+	Line_Code  int64  `json:"line_code" gorm:"primaryKey"`
+	Start_Time string `json:"start_time" gorm:"primaryKeys"`
+	Type       int8   `json:"type" gorm:"primaryKey"`
 }
 
 // type ScheduleLineDto struct {

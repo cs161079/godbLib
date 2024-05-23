@@ -32,19 +32,19 @@ func initProgram() {
 func main() {
 	initProgram()
 	start := time.Now()
-	forTest()
-	// var allData []models.LineDto
-	// if err := deleteAllData(); err != nil {
-	// 	logger.ERROR(err.Error())
-	// }
+	// forTest()
+	var allData []models.LineDto
+	if err := deleteAllData(); err != nil {
+		logger.ERROR(err.Error())
+	}
 
-	// if err := SyncData(&allData); err != nil {
-	// 	logger.ERROR(err.Error())
-	// }
+	if err := SyncData(&allData); err != nil {
+		logger.ERROR(err.Error())
+	}
 
-	// if err := saveAllData(&allData); err != nil {
-	// 	logger.ERROR(err.Error())
-	// }
+	if err := saveAllData(&allData); err != nil {
+		logger.ERROR(err.Error())
+	}
 	defer func() {
 		duration := time.Since(start)
 		logger.INFO(fmt.Sprintf("Synchronization make %.2f to finish.", duration.Minutes()))
@@ -66,14 +66,14 @@ func forTest() {
 		logger.ERROR(err.Error())
 	}
 	// ****** Http Request to get All Bus Lines ******
-	tt, err := time.ParseInLocation("2006-01-02 15:04:05", "1900-01-01 05:10:00", time.Now().Location())
+	//tt, err := time.ParseInLocation("2006-01-02 15:04:05", "1900-01-01 05:10:00", time.Now().Location())
 	if err != nil {
 		logger.ERROR(err.Error())
 	}
 	err = db.SaveScheduleTime(models.ScheduleTime{
 		Sdc_Code:   54,
 		Line_Code:  1152,
-		Start_Time: tt,
+		Start_Time: "05:10",
 		Type:       0,
 	})
 	if err != nil {
@@ -188,7 +188,7 @@ func SyncData(allData *[]models.LineDto) error {
 	}
 	// ***********************************************
 	// ******** For loop in array of lines ***********
-	for i := range lines[0:3] {
+	for i := range lines[6:7] {
 		// **** Http Request to get all Routes for every Line *******
 		lines[i].Routes, err = GetBusRoutes(lines[i].Line_Code)
 		if err != nil {
@@ -230,7 +230,7 @@ func SyncData(allData *[]models.LineDto) error {
 		lines[i].Schedules = append(lines[i].Schedules, *dailyTimes)
 	}
 	// **************************************************
-	*allData = lines[0:3]
+	*allData = lines[6:7]
 	logger.INFO("SYNC DATA FROM OASA FINISHED")
 	return nil
 }

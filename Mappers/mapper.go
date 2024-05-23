@@ -42,11 +42,15 @@ func internalMapper(source map[string]interface{}, target interface{}) {
 		if sourceFieldVal != nil {
 			switch fieldType {
 			case TIME_TYPE:
-				timeVal, err := time.ParseInLocation("2006-01-02 15:04:05", sourceFieldVal.(string), time.Now().Location())
+				timeStamp, err := time.ParseInLocation("2006-01-02 15:04:05", sourceFieldVal.(string), time.Now().Location())
 				if err != nil {
 					panic(err.Error())
 				}
-				v.Set(reflect.ValueOf(timeVal))
+				var timeStr = timeStamp.Format("15:04")
+				if err != nil {
+					panic(err.Error())
+				}
+				v.Set(reflect.ValueOf(timeStr))
 			case reflect.String.String():
 				v.SetString(sourceFieldVal.(string))
 			case reflect.Int64.String():
