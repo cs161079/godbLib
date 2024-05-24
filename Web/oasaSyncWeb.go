@@ -226,11 +226,11 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 	}
 	if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
 		//fmt.Println("Client Error Response from Server")
-		oasaResult.Error = fmt.Errorf("%s %s", response.Status, "REQUEST CONTAINS BAD SYNTAX OR CANNOT BE FULLFILLED")
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
 		return &oasaResult
 	}
 	if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
-		oasaResult.Error = fmt.Errorf("%s %s", response.Status, models.INTERNALL_SERVER_ERROR)
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
 		//logger.ERROR(string(responseBody))
 		return &oasaResult
 	}

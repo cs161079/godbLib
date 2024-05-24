@@ -187,50 +187,51 @@ func SyncData(allData *[]models.LineDto) error {
 		return err
 	}
 	// ***********************************************
+	var tempLines = lines[0:100]
 	// ******** For loop in array of lines ***********
-	for i := range lines[6:7] {
+	for i := range tempLines {
 		// **** Http Request to get all Routes for every Line *******
-		lines[i].Routes, err = GetBusRoutes(lines[i].Line_Code)
+		lines[i].Routes, err = GetBusRoutes(tempLines[i].Line_Code)
 		if err != nil {
 			return err
 		}
 		// **********************************************************
 		// ************* For Loop in array of Routes ****************
-		for j := range lines[i].Routes {
+		for j := range tempLines[i].Routes {
 			// *** Http Request to Get stop for every route in array ****
-			lines[i].Routes[j].Stops, err = GetBusStops(lines[i].Routes[j].Route_Code)
+			tempLines[i].Routes[j].Stops, err = GetBusStops(tempLines[i].Routes[j].Route_Code)
 			if err != nil {
 				return err
 			}
 			// ***********************************************************
 			// ******* Http Request to get details for every route *******
-			lines[i].Routes[j].RouteDetails, err = GetRouteDetails(lines[i].Routes[j].Route_Code)
+			tempLines[i].Routes[j].RouteDetails, err = GetRouteDetails(tempLines[i].Routes[j].Route_Code)
 			if err != nil {
 				return err
 			}
 			// **********************************************************
 		}
 		// ********* Http Request get Schedule Master Line **************
-		lines[i].Schedules, err = GetScheduleMasterLine(int64(lines[i].Line_Code))
+		tempLines[i].Schedules, err = GetScheduleMasterLine(int64(tempLines[i].Line_Code))
 		if err != nil {
 			return err
 		}
 		// **************************************************************
-		for k := range lines[i].Schedules {
-			result, err := GetScheduleTime(int32(lines[i].Ml_Code), lines[i].Line_Code, lines[i].Schedules[k].Sdc_Code)
+		for k := range tempLines[i].Schedules {
+			result, err := GetScheduleTime(int32(tempLines[i].Ml_Code), tempLines[i].Line_Code, tempLines[i].Schedules[k].Sdc_Code)
 			if err != nil {
 				return err
 			}
-			lines[i].Schedules[k].ShcedeLine = *result
+			tempLines[i].Schedules[k].ShcedeLine = *result
 		}
-		dailyTimes, err := GetDailySchedule(lines[i].Line_Code)
+		dailyTimes, err := GetDailySchedule(tempLines[i].Line_Code)
 		if err != nil {
 			return err
 		}
-		lines[i].Schedules = append(lines[i].Schedules, *dailyTimes)
+		lines[i].Schedules = append(tempLines[i].Schedules, *dailyTimes)
 	}
 	// **************************************************
-	*allData = lines[6:7]
+	*allData = tempLines
 	logger.INFO("SYNC DATA FROM OASA FINISHED")
 	return nil
 }
