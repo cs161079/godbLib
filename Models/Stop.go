@@ -30,3 +30,15 @@ type Stop struct {
 	Stop_type int8 `json:"stop_type" oasa:"StopType"`
 	Stop_amea int8 `json:"stop_amea" oasa:"StopAmea"`
 }
+
+type StopDto struct {
+	Stop_code   int64   `json:"Stop_code"`
+	Stop_descr  string  `json:"stop_descr"`
+	Stop_street string  `json:"stop_street"`
+	Distance    float64 `json:"distance"`
+}
+
+type Point struct {
+	Lat  float64 `json:"point_lat`
+	Long float64 `json:point_long`
+}

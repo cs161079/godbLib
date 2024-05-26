@@ -68,3 +68,21 @@ func DeleteStop(trans *gorm.DB) error {
 	}
 	return nil
 }
+
+func SelectClosestStops(point models.Point, from float32, to float32) ([]models.StopDto, error) {
+	var resultList []models.StopDto
+	var subQuery = DB.Table("STOP s").Select("stop_code, stop_descr, stop_street," +
+		fmt.Sprintf("round(haversine_distance(%f, %f, s.stop_lat, s.stop_lng), 2)", point.Lat, point.Long) +
+		" AS distance")
+
+	if err := DB.Table("(?) as b", subQuery).Select(" b. stop_code, b.stop_descr, b.stop_street, b.distance").
+		Where(
+			fmt.Sprintf(
+				"distance > %f AND distance <= %f", from, to)).
+		Order("distance").
+		Find(&resultList).Error; err != nil {
+		return nil, err
+	}
+	return resultList, nil
+
+}
