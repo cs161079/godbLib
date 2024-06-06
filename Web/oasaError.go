@@ -10,7 +10,7 @@ type OasaError struct {
 
 type OasaResponse struct {
 	Error error
-	Data  map[string]interface{}
+	Data  any
 }
 
 func (e OasaError) Error() string {
