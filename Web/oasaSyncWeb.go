@@ -1,4 +1,4 @@
-package oasaSyncWeb
+package web
 
 import (
 	"bytes"
@@ -19,6 +19,7 @@ import (
 const (
 	oasaApplicationHost = "http://telematics.oasa.gr"
 	testApplicationHost = "http://localhost:8080"
+	geoapifyApplication = "https://api.geoapify.com"
 )
 
 type OpswHttpRequest struct {
@@ -78,7 +79,13 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.String(), response.StatusCode))
+
+	requestBodyTest, err := io.ReadAll(req.Body)
+	if err == nil {
+		logger.INFO(string(requestBodyTest))
+	}
 
 	return response, nil
 }
@@ -234,7 +241,7 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 		//logger.ERROR(string(responseBody))
 		return &oasaResult
 	}
-	var tmpResult interface{}
+	var tmpResult map[string]interface{}
 	err = json.Unmarshal(responseBody, &tmpResult)
 	if err != nil {
 		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
@@ -246,5 +253,37 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 		return &oasaResult
 	}
 	oasaResult.Data = tmpResult
+	return &oasaResult
+}
+
+func GeneralRequest(req OpswHttpRequest, responseModel any) *OasaResponse {
+	var oasaResult OasaResponse = OasaResponse{}
+	response, err := httpRequest(&req)
+	if err != nil {
+		oasaResult.Error = err
+		return &oasaResult
+	}
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED ANALYZE RESPONSE BODY. %s", err.Error())
+		return &oasaResult
+	}
+	if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
+		//fmt.Println("Client Error Response from Server")
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
+		return &oasaResult
+	}
+	if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
+		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
+		//logger.ERROR(string(responseBody))
+		return &oasaResult
+	}
+
+	err = json.Unmarshal(responseBody, responseModel)
+	if err != nil {
+		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
+		return &oasaResult
+	}
+
 	return &oasaResult
 }

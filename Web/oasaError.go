@@ -1,4 +1,4 @@
-package oasaSyncWeb
+package web
 
 import "fmt"
 
@@ -10,7 +10,7 @@ type OasaError struct {
 
 type OasaResponse struct {
 	Error error
-	Data  interface{}
+	Data  map[string]interface{}
 }
 
 func (e OasaError) Error() string {

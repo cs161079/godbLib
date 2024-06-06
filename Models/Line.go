@@ -1,5 +1,7 @@
 package models
 
+import "sort"
+
 /*
 	***************************************************
 	This struct is to get data from OASA Application
@@ -44,4 +46,18 @@ type LineDto struct {
 	Line_Descr_Eng string              `json:"line_descr_eng"`
 	Routes         []RouteDto          `json:"routes"`
 	Schedules      []ScheduleMasterDto `json:"scheduleDay"`
+}
+
+type LineArrDto []LineDto
+
+func (t LineArrDto) SortWithId() {
+	sort.Slice(t, func(i, j int) bool {
+		return t[i].Line_Id < t[j].Line_Id
+	})
+}
+
+type LineDto02 struct {
+	Line_id     string
+	Route_Code  int32
+	Route_Descr string
 }
