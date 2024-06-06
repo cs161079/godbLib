@@ -82,11 +82,6 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 
 	logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.String(), response.StatusCode))
 
-	requestBodyTest, err := io.ReadAll(req.Body)
-	if err == nil {
-		logger.INFO(string(requestBodyTest))
-	}
-
 	return response, nil
 }
 
