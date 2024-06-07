@@ -21,9 +21,9 @@ type Route struct {
 }
 
 type RouteDto struct {
-	Id              int64         `json:"Id"`
-	Route_Code      int32         `json:"route_code"`
-	Line_Code       int32         `json:"line_code"`
+	Id         int64 `json:"Id"`
+	Route_Code int32 `json:"route_code"`
+	// Line_Code       int32         `json:"line_code"`
 	Route_Descr     string        `json:"route_descr"`
 	Route_Descr_Eng string        `json:"route_descr_eng"`
 	Route_Type      int8          `json:"route_type"`
