@@ -4,9 +4,13 @@ import (
 	models "github.com/cs161079/godbLib/Models"
 )
 
-func LineMapper(source map[string]interface{}) models.LineOasa {
+func LineMapper(source any) models.LineOasa {
 	var busLineOb models.LineOasa
-	internalMapper(source, &busLineOb)
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	internalMapper(vMap, &busLineOb)
 
 	return busLineOb
 }

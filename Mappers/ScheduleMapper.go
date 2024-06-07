@@ -8,14 +8,18 @@ func ScheduleOasaToScheduleDto(source models.ScheduleOasa) models.ScheduleMaster
 	return target
 }
 
-func ScheduleTimesMapper(source map[string]interface{}) models.ScheduleTimes {
+func ScheduleTimesMapper(source any) models.ScheduleTimes {
 	var result models.ScheduleTimes
-	for _, rec := range source["go"].([]interface{}) {
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	for _, rec := range vMap["go"].([]interface{}) {
 		var current models.ScheduleTimeDto
 		internalMapper(rec.(map[string]interface{}), &current)
 		result.Go = append(result.Go, current)
 	}
-	for _, rec := range source["come"].([]interface{}) {
+	for _, rec := range vMap["come"].([]interface{}) {
 		var current models.ScheduleTimeDto
 		internalMapper(rec.(map[string]interface{}), &current)
 		result.Come = append(result.Come, current)

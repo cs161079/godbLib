@@ -115,9 +115,13 @@ func structMapper02(source any, target any) {
 	}
 }
 
-func ScheduleMasterLine(source map[string]interface{}) models.ScheduleOasa {
+func ScheduleMasterLine(source any) models.ScheduleOasa {
 	var result models.ScheduleOasa
-	internalMapper(source, &result)
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	internalMapper(vMap, &result)
 	return result
 }
 
@@ -140,8 +144,12 @@ func ScheduleMasterLineDtoToScheduleMasterLine(source models.ScheduleMaster) mod
 	return result
 }
 
-func RouteDetailDtoMapper(source map[string]interface{}) models.RouteDetail {
+func RouteDetailDtoMapper(source any) models.RouteDetail {
 	var routeDetailDto models.RouteDetail
-	internalMapper(source, &routeDetailDto)
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	internalMapper(vMap, &routeDetailDto)
 	return routeDetailDto
 }

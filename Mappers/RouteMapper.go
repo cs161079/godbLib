@@ -2,9 +2,13 @@ package mapper
 
 import models "github.com/cs161079/godbLib/Models"
 
-func RouteMapper(source map[string]interface{}) models.RouteOasa {
+func RouteMapper(source any) models.RouteOasa {
 	var busRouteOb models.RouteOasa
-	internalMapper(source, &busRouteOb)
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	internalMapper(vMap, &busRouteOb)
 
 	return busRouteOb
 }

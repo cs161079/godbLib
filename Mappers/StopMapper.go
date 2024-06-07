@@ -2,9 +2,13 @@ package mapper
 
 import models "github.com/cs161079/godbLib/Models"
 
-func StopMapper(source map[string]interface{}) models.StopOasa {
+func StopMapper(source any) models.StopOasa {
 	var busStopOb models.StopOasa
-	internalMapper(source, &busStopOb)
+	vMap, ok := source.(map[string]interface{})
+	if !ok {
+		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
+	}
+	internalMapper(vMap, &busStopOb)
 	return busStopOb
 }
 

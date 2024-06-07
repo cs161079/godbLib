@@ -236,7 +236,7 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 		//logger.ERROR(string(responseBody))
 		return &oasaResult
 	}
-	var tmpResult map[string]interface{}
+	var tmpResult interface{}
 	err = json.Unmarshal(responseBody, &tmpResult)
 	if err != nil {
 		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
