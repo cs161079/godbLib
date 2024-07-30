@@ -3,9 +3,9 @@ package models
 import "sort"
 
 /*
-	***************************************************
-	This struct is to get data from OASA Application
-	***************************************************
+***************************************************
+This struct is to get data from OASA Application
+***************************************************
 */
 type LineOasa struct {
 	Ml_Code        int16  `json:"masterCode" oasa:"ml_code"`
@@ -14,12 +14,13 @@ type LineOasa struct {
 	Line_Id        string `json:"lineId" oasa:"line_id"`
 	Line_Descr     string `json:"lineDescr" oasa:"line_descr"`
 	Line_Descr_Eng string `json:"lineDescrEng" oasa:"line_descr_eng"`
+	Mld_master     int8   `json:"mld_master" oasa:"mld_master"`
 }
 
 /*
-	******************************************
-	Struct for Bus Lines Entities for database
-	******************************************
+******************************************
+Struct for Bus Lines Entities for database
+******************************************
 */
 type Line struct {
 	Id             int64  `json:"id" gorm:"primaryKey"`
@@ -29,12 +30,15 @@ type Line struct {
 	Line_Id        string `json:"line_id"`
 	Line_Descr     string `json:"line_descr"`
 	Line_Descr_Eng string `json:"line_descr_eng"`
+	Mld_master     int8   `json:"is_master"`
 }
 
 /*
-	*************************************************
-	       This struct is for different reasons
-	*************************************************
+*************************************************
+
+	This struct is for different reasons
+
+*************************************************
 */
 type LineDto struct {
 	Id             int64               `json:"id"`

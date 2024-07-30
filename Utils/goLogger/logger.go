@@ -17,7 +17,7 @@ type GormLogger struct {
 }
 
 const (
-	rootLogsDirpath = "C:\\oasa-telematics"
+	rootLogsDirpath = "/logs"
 )
 
 var Logger *logger.Logger
@@ -39,7 +39,7 @@ func InitLogger(applicationName string) {
 	fmt.Println("Folder create succefully for logs....")
 	var runMode = os.Getenv("application.mode")
 	if runMode == "PROD" {
-		fileName := filepath.Join(rootLogsDirpath, applicationName, "opswlog.log")
+		fileName := filepath.Join(rootLogsDirpath, applicationName, "oasaLogs.log")
 		//open a file
 		f, err := os.OpenFile(fileName, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
 		if err != nil {

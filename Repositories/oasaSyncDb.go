@@ -35,7 +35,7 @@ func (ds DataSource) DatasourceUrl() string {
 }
 
 func getDataSource() (*DataSource, error) {
-	err := godotenv.Load("enviroment.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		return nil, err
 	}

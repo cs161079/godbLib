@@ -59,7 +59,7 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 		return nil, fmt.Errorf("REQUEST OBJECT-STRUCT IS NIL OR IS NOT SET CORRECTLY")
 	}
 
-	err := checkFields(request)
+	var err = checkFields(request)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,6 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 			req.Header.Set(key, value)
 		}
 	}
-
 	response, err := client.Do(req)
 	if err != nil {
 		return nil, err
@@ -216,30 +215,30 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 		Endpoint: fmt.Sprintf("%s/api/?act=%s%s", oasaApplicationHost, action, extraparamUrl),
 	}
 	//Error Code for error occured in Request Creation
-	response, err := httpRequest(&req)
+	//var tries = 1
+	var resp []byte = nil
+	//var retry bool = false
+	var err error = nil
+	//for tries <= 3 {
+	//	resp, err, retry = internalHttpRequest(req)
+	//	if !retry {
+	//		break
+	//	}
+	//	if tries > 1 {
+	//		logger.WARN(fmt.Sprintf("Try make request for %d time beacause of error %+v", tries, err))
+	//	}
+	//	tries = tries + 1
+	//}
+	resp, err, _ = internalHttpRequest(req)
 	if err != nil {
 		oasaResult.Error = err
 		return &oasaResult
 	}
-	responseBody, err := io.ReadAll(response.Body)
-	if err != nil {
-		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED ANALYZE RESPONSE BODY. %s", err.Error())
-		return &oasaResult
-	}
-	if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
-		//fmt.Println("Client Error Response from Server")
-		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
-		return &oasaResult
-	}
-	if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
-		oasaResult.Error = fmt.Errorf("%s %s", response.Status, responseBody)
-		//logger.ERROR(string(responseBody))
-		return &oasaResult
-	}
+
 	var tmpResult interface{}
-	err = json.Unmarshal(responseBody, &tmpResult)
+	err = json.Unmarshal(resp, &tmpResult)
 	if err != nil {
-		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s", err.Error())
+		oasaResult.Error = fmt.Errorf("AN ERROR OCCURED WHEN CONVERT JSON STRING TO INTERFACE. %s \n %+v", err.Error(), resp)
 		return &oasaResult
 	}
 	hasError := getProperty(tmpResult, "error")
@@ -247,8 +246,33 @@ func OasaRequestApi(action string, extraParams map[string]interface{}) *OasaResp
 		oasaResult.Error = fmt.Errorf("SERVER RESPONSES ERROR. %s", hasError)
 		return &oasaResult
 	}
+
 	oasaResult.Data = tmpResult
 	return &oasaResult
+}
+
+func internalHttpRequest(req OpswHttpRequest) ([]byte, error, bool) {
+	response, err := httpRequest(&req)
+	if err != nil {
+		logger.ERROR(fmt.Sprintf("An error occured in httpRequest(). %s", err.Error()))
+		return nil, err, false
+	}
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		var returnedError = fmt.Errorf("AN ERROR OCCURED ANALYZE RESPONSE BODY. %s", err.Error())
+		return nil, returnedError, false
+	}
+	if response.StatusCode >= http.StatusBadRequest && response.StatusCode <= http.StatusUnavailableForLegalReasons {
+		//fmt.Println("Client Error Response from Server")
+		var returnedError = fmt.Errorf("%s %s", response.Status, responseBody)
+		return nil, returnedError, true
+	}
+	if response.StatusCode >= http.StatusInternalServerError && response.StatusCode <= http.StatusNetworkAuthenticationRequired {
+		var returnedError = fmt.Errorf("%s %s", response.Status, responseBody)
+		//logger.ERROR(string(responseBody))
+		return nil, returnedError, false
+	}
+	return responseBody, nil, false
 }
 
 func GeneralRequest(req OpswHttpRequest, responseModel any) *OasaResponse {

@@ -1,5 +1,10 @@
 package models
 
+/*
+***************************************************
+This struct is to get data from OASA Application
+***************************************************
+*/
 type RouteOasa struct {
 	Route_Code      int32   `json:"routeCode" oasa:"RouteCode"`
 	Line_Code       int32   `json:"lineCode" oasa:"LineCode"`
@@ -9,7 +14,11 @@ type RouteOasa struct {
 	Route_Distance  float32 `json:"routeDistance" oasa:"RouteDistance"`
 }
 
-// ********* Struct for Bus Route Entities ****************
+/*
+******************************************
+Struct for Bus Lines Entities for database
+******************************************
+*/
 type Route struct {
 	Id              int64   `json:"Id" gorm:"PrimaryKey"`
 	Route_Code      int32   `json:"route_code" gorm:"index:ROUTE_CODE_UN,unique" oasa:"RouteCode"`
@@ -19,6 +28,12 @@ type Route struct {
 	Route_Type      int8    `json:"route_type" oasa:"RouteType"`
 	Route_Distance  float32 `json:"route_distance" oasa:"RouteDistance"`
 }
+
+/*
+	*************************************************
+	       This struct is for different reasons
+	*************************************************
+*/
 
 type RouteDto struct {
 	Id         int64 `json:"Id"`

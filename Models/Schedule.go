@@ -12,11 +12,24 @@ func (t rawTime) Time() time.Time {
 	return results
 }
 
+/*
+***************************************************
+This struct is to get data from OASA Application
+*/
 type ScheduleOasa struct {
 	Sdc_Descr     string `json:"scheduleDescr" oasa:"sdc_descr"`
 	Sdc_Descr_Eng string `json:"scheduleDescrEng" oasa:"sdc_descr_eng"`
 	Sdc_Code      int32  `json:"scheduleCode" oasa:"sdc_code"`
 }
+
+type ScheduleTimes struct {
+	Go   []ScheduleTimeDto `oasa:"go"`
+	Come []ScheduleTimeDto `oasa:"come"`
+}
+
+/*
+***************************************************
+ */
 
 type ScheduleMasterDto struct {
 	Sdc_Descr     string        `json:"sdc_descr" oasa:"sdc_descr"`
@@ -24,12 +37,6 @@ type ScheduleMasterDto struct {
 	Sdc_Code      int32         `json:"sdc_code" oasa:"sdc_code"`
 	ShcedeLine    ScheduleTimes `json:"scheduleLine"`
 }
-
-type ScheduleTimes struct {
-	Go   []ScheduleTimeDto `oasa:"go"`
-	Come []ScheduleTimeDto `oasa:"come"`
-}
-type ScheduleTimeOasa struct{}
 
 type ScheduleTimeDto struct {
 	//Line_Code  int64     `json:"line_code" oasa:"line_code"`
