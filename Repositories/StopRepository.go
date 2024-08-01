@@ -30,18 +30,11 @@ func SaveStop(busStop models.Stop) error {
 	}
 	isNew := selectedBusStop == nil
 	var r *gorm.DB = nil
-	if isNew {
-		newId, err := SequenceGetNextVal(models.BUSSTOP_SEQ)
-		if err != nil {
-			return err
-		}
-		busStop.Id = *newId
-		r = DB.Table("STOP").Create(&busStop)
-
-	} else {
+	if !isNew {
 		busStop.Id = selectedBusStop.Id
-		r = DB.Table("STOP").Save(&busStop)
+
 	}
+	r = DB.Table("STOP").Save(&busStop)
 	if r.Error != nil {
 		return r.Error
 	}

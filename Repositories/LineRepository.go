@@ -38,18 +38,10 @@ func SaveLine(input models.Line) error {
 	}
 	isNew := selectedBusLine == nil
 	var r *gorm.DB = nil
-	if isNew {
-		newId, err := SequenceGetNextVal(models.BUSLINE_SEQ)
-		if err != nil {
-			return err
-		}
-		input.Id = *newId
-		r = DB.Table("LINE").Create(&input)
-
-	} else {
+	if !isNew {
 		input.Id = selectedBusLine.Id
-		r = DB.Table("LINE").Save(&input)
 	}
+	r = DB.Table("LINE").Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}

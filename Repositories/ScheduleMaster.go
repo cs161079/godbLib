@@ -30,19 +30,11 @@ func SaveScheduleMaster(input models.ScheduleMaster) error {
 	}
 	isNew := selectedBusLine == nil
 	var r *gorm.DB = nil
-	if isNew {
-		newId, err := SequenceGetNextVal(models.BUSSCHEDULEMASTERLINE)
-		if err != nil {
-			return err
-		}
-		input.Id = *newId
-		r = DB.Table("SCHEDULEMASTER").Create(&input)
-
-	} else {
+	if !isNew {
 		input.Id = selectedBusLine.Id
 		//input.Line_descr = input.Line_descr + " Update"
-		r = DB.Table("SCHEDULEMASTER").Save(&input)
 	}
+	r = DB.Table("SCHEDULEMASTER").Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}

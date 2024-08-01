@@ -41,19 +41,11 @@ func SaveRoute(input models.Route) error {
 	}
 	isNew := selectedBusLine == nil
 	var r *gorm.DB = nil
-	if isNew {
-		newId, err := SequenceGetNextVal(models.BUSROUTE_SEQ)
-		if err != nil {
-			return err
-		}
-		input.Id = *newId
-		r = DB.Table("ROUTE").Create(&input)
-
-	} else {
+	if !isNew {
 		input.Id = selectedBusLine.Id
 		//input.Line_descr = input.Line_descr + " Update"
-		r = DB.Table("ROUTE").Save(&input)
 	}
+	r = DB.Table("ROUTE").Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}
