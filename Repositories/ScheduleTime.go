@@ -1,10 +1,7 @@
 package db
 
 import (
-	"fmt"
-
 	models "github.com/cs161079/godbLib/Models"
-	logger "github.com/cs161079/godbLib/Utils/goLogger"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +14,7 @@ func SelectScheduleTime(lineCode int64, sdcCode int32) ([]models.ScheduleTime, e
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			logger.WARN(fmt.Sprintf("SCHEDULE NOT FOUND. [line_code: %d].", lineCode))
+			//logger.WARN(fmt.Sprintf("SCHEDULE NOT FOUND. [line_code: %d].", lineCode))
 			return nil, nil
 		}
 	}
@@ -33,7 +30,7 @@ func SelectScheduleTimeByKey(lineCode int64, sdcCode int32, tTime string, typ in
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			logger.WARN(fmt.Sprintf("SCHEDULE NOT FOUND. [line_code: %d, %d, %s, %d].", lineCode, sdcCode, tTime, typ))
+			//logger.WARN(fmt.Sprintf("SCHEDULE NOT FOUND. [line_code: %d, %d, %s, %d].", lineCode, sdcCode, tTime, typ))
 			return nil, nil
 		}
 	}

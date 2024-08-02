@@ -24,7 +24,7 @@ func SaveRouteStops(input models.RouteStops) error {
 	if r.Error != nil {
 		return r.Error
 	}
-	logger.INFO(fmt.Sprintf("STOP [%d] SAVED SUCCESFULL IN ROUTE [%d].", input.Stop_code, input.Route_code))
+	//logger.INFO(fmt.Sprintf("STOP [%d] SAVED SUCCESFULL IN ROUTE [%d].", input.Stop_code, input.Route_code))
 	return nil
 }
 

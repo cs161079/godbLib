@@ -1,11 +1,7 @@
 package db
 
 import (
-	"fmt"
-
 	models "github.com/cs161079/godbLib/Models"
-	logger "github.com/cs161079/godbLib/Utils/goLogger"
-
 	"gorm.io/gorm"
 )
 
@@ -18,7 +14,7 @@ func SelectByRouteCode(routeCode int32) (*models.Route, error) {
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			logger.WARN(fmt.Sprintf("BUS ROUTE NOT FOUND [ROUTE_CODE: %d]", routeCode))
+			//logger.WARN(fmt.Sprintf("BUS ROUTE NOT FOUND [ROUTE_CODE: %d]", routeCode))
 			return nil, nil
 		}
 	}

@@ -4,8 +4,6 @@ import (
 	"fmt"
 
 	models "github.com/cs161079/godbLib/Models"
-	logger "github.com/cs161079/godbLib/Utils/goLogger"
-
 	"gorm.io/gorm"
 )
 
@@ -17,7 +15,7 @@ func SelectBySdcCodeLineCode(iLine int64, iSdc int32) (*models.ScheduleMaster, e
 		return nil, r.Error
 	}
 	if r.RowsAffected == 0 {
-		logger.INFO(fmt.Sprintf("BUS SCHEDULE MASTER LINE NOT FOUND [line_code: %d, sdc_code: %d].", iLine, iSdc))
+		//logger.INFO(fmt.Sprintf("BUS SCHEDULE MASTER LINE NOT FOUND [line_code: %d, sdc_code: %d].", iLine, iSdc))
 		return nil, nil
 	}
 	return &selectedVal, nil

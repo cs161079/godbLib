@@ -79,7 +79,7 @@ func httpRequest(request *OpswHttpRequest) (*http.Response, error) {
 		return nil, err
 	}
 
-	logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.String(), response.StatusCode))
+	//logger.INFO(fmt.Sprintf("%s %s %d", response.Request.Method, response.Request.URL.String(), response.StatusCode))
 
 	return response, nil
 }

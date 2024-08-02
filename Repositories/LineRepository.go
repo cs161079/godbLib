@@ -1,10 +1,7 @@
 package db
 
 import (
-	"fmt"
-
 	models "github.com/cs161079/godbLib/Models"
-	logger "github.com/cs161079/godbLib/Utils/goLogger"
 	"gorm.io/gorm"
 )
 
@@ -24,7 +21,7 @@ func SelectByLineCode(lineCode int64) (*models.Line, error) {
 			return nil, r.Error
 		}
 		if r.RowsAffected == 0 {
-			logger.WARN(fmt.Sprintf("BUS LINE NOT FOUND. [line_code: %d].", lineCode))
+			//logger.WARN(fmt.Sprintf("BUS LINE NOT FOUND. [line_code: %d].", lineCode))
 			return nil, nil
 		}
 	}
