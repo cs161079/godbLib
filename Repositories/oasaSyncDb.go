@@ -22,6 +22,15 @@ type DataSource struct {
 	DatabaseName string
 }
 
+const (
+	LINETABLE           = "line"
+	ROUTETABLE          = "route"
+	STOPTABLE           = "stop"
+	ROUTESTOPSTABLE     = "routestops"
+	SCHEDULEMASTERTABLE = "schedulemaster"
+	SCHEDULETIMETABLE   = "scheduletime"
+)
+
 const dataSourceFormat = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local"
 
 type DatasourceLink interface {

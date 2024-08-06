@@ -10,7 +10,7 @@ import (
 
 func SelectByStopCode(stopCode int64) (*models.Stop, error) {
 	var selectedVal models.Stop
-	r := DB.Table("STOP").Where("stop_code = ?", stopCode).Find(&selectedVal)
+	r := DB.Table(STOPTABLE).Where("stop_code = ?", stopCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			fmt.Println(r.Error.Error())
@@ -32,9 +32,8 @@ func SaveStop(busStop models.Stop) error {
 	var r *gorm.DB = nil
 	if !isNew {
 		busStop.Id = selectedBusStop.Id
-
 	}
-	r = DB.Table("STOP").Save(&busStop)
+	r = DB.Table(STOPTABLE).Save(&busStop)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -43,11 +42,11 @@ func SaveStop(busStop models.Stop) error {
 
 func StopList01(routeCode int32) (*[]models.Stop, error) {
 	var result []models.Stop
-	r := DB.Table("STOP").
-		Select("STOP.*, "+
-			"ROUTESTOPS.senu").
-		Joins("LEFT JOIN ROUTESTOPS ON STOP.stop_code=ROUTESTOPS.stop_code").
-		Where("ROUTESTOPS.route_code=?", routeCode).Order("senu").Find(&result)
+	r := DB.Table(STOPTABLE).
+		Select("stop.*, "+
+			"routestops.senu").
+		Joins("LEFT JOIN routestops ON stop.stop_code=routestops.stop_code").
+		Where("routestops.route_code=?", routeCode).Order("senu").Find(&result)
 	if r.Error != nil {
 		return nil, r.Error
 	}
@@ -55,7 +54,7 @@ func StopList01(routeCode int32) (*[]models.Stop, error) {
 }
 
 func DeleteStop(trans *gorm.DB) error {
-	if err := trans.Table("STOP").Where("1=1").Delete(&models.Stop{}).Error; err != nil {
+	if err := trans.Table(STOPTABLE).Where("1=1").Delete(&models.Stop{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}
@@ -64,7 +63,7 @@ func DeleteStop(trans *gorm.DB) error {
 
 func SelectClosestStops(point models.Point, from float32, to float32) ([]models.StopDto, error) {
 	var resultList []models.StopDto
-	var subQuery = DB.Table("STOP s").Select("stop_code, stop_descr, stop_street," +
+	var subQuery = DB.Table("stop s").Select("stop_code, stop_descr, stop_street," +
 		fmt.Sprintf("round(haversine_distance(%f, %f, s.stop_lat, s.stop_lng), 2)", point.Lat, point.Long) +
 		" AS distance")
 

@@ -15,7 +15,7 @@ type OpswValidateError struct {
 func SelectByLineCode(lineCode int64) (*models.Line, error) {
 	//var selectedPtr *oasaSyncModel.Busline
 	var selectedVal models.Line
-	r := DB.Table("LINE").Where("line_code = ?", lineCode).Find(&selectedVal)
+	r := DB.Table(LINETABLE).Where("line_code = ?", lineCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -38,7 +38,7 @@ func SaveLine(input models.Line) error {
 	if !isNew {
 		input.Id = selectedBusLine.Id
 	}
-	r = DB.Table("LINE").Save(&input)
+	r = DB.Table(LINETABLE).Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -48,7 +48,7 @@ func SaveLine(input models.Line) error {
 
 func LineList01() ([]models.Line, error) {
 	var result []models.Line
-	r := DB.Table("LINE").Order("line_id, line_code").Find(&result)
+	r := DB.Table(LINETABLE).Order("line_id, line_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -76,7 +76,7 @@ func LineList01Distinct() ([]models.Line, error) {
 
 func LineListBymlcode(mlcode int16) ([]models.Line, error) {
 	var result []models.Line
-	r := DB.Table("LINE").Where("ml_code = ?", mlcode).Order("line_id, line_code").Find(&result)
+	r := DB.Table(LINETABLE).Where("ml_code = ?", mlcode).Order("line_id, line_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -87,7 +87,7 @@ func LineListBymlcode(mlcode int16) ([]models.Line, error) {
 }
 
 func DeleteLines(trans *gorm.DB) error {
-	if err := trans.Table("LINE").Where("1=1").Delete(&models.Line{}).Error; err != nil {
+	if err := trans.Table(LINETABLE).Where("1=1").Delete(&models.Line{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}

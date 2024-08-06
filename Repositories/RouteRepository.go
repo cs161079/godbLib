@@ -41,7 +41,7 @@ func SaveRoute(input models.Route) error {
 		input.Id = selectedBusLine.Id
 		//input.Line_descr = input.Line_descr + " Update"
 	}
-	r = DB.Table("ROUTE").Save(&input)
+	r = DB.Table(ROUTETABLE).Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -51,7 +51,7 @@ func SaveRoute(input models.Route) error {
 
 func RouteList01() ([]models.Route, error) {
 	var result []models.Route
-	r := DB.Table("ROUTE").Order("route_code").Find(&result)
+	r := DB.Table(ROUTETABLE).Order("route_code").Find(&result)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -61,7 +61,7 @@ func RouteList01() ([]models.Route, error) {
 }
 
 func DeleteRoute(trans *gorm.DB) error {
-	if err := trans.Table("ROUTE").Where("1=1").Delete(&models.Route{}).Error; err != nil {
+	if err := trans.Table(ROUTETABLE).Where("1=1").Delete(&models.Route{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}

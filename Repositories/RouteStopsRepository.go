@@ -10,7 +10,7 @@ import (
 
 func DeleteStopByRoute(routeCode int64) error {
 	var routeStops []models.RouteStops
-	r := DB.Table("ROUTESTOPS").Where("route_code=?", routeCode).Delete(&routeStops)
+	r := DB.Table(ROUTESTOPSTABLE).Where("route_code=?", routeCode).Delete(&routeStops)
 	if r.Error != nil {
 		// logger.ERROR(r.Error.Error())
 		return r.Error
@@ -20,7 +20,7 @@ func DeleteStopByRoute(routeCode int64) error {
 }
 
 func SaveRouteStops(input models.RouteStops) error {
-	r := DB.Table("ROUTESTOPS").Create(&input)
+	r := DB.Table(ROUTESTOPSTABLE).Create(&input)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -29,7 +29,7 @@ func SaveRouteStops(input models.RouteStops) error {
 }
 
 func DeleteRouteStops(trans *gorm.DB) error {
-	if err := trans.Table("ROUTESTOPS").Where("1=1").Delete(&models.RouteStops{}).Error; err != nil {
+	if err := trans.Table(ROUTESTOPSTABLE).Where("1=1").Delete(&models.RouteStops{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 
 func SelectBySdcCodeLineCode(iLine int64, iSdc int32) (*models.ScheduleMaster, error) {
 	var selectedVal models.ScheduleMaster
-	r := DB.Table("SCHEDULEMASTER").Where("sdc_code = ? AND line_code = ?", iSdc, iLine).Find(&selectedVal)
+	r := DB.Table(SCHEDULEMASTERTABLE).Where("sdc_code = ? AND line_code = ?", iSdc, iLine).Find(&selectedVal)
 	if r.Error != nil {
 		fmt.Println(r.Error.Error())
 		return nil, r.Error
@@ -32,7 +32,7 @@ func SaveScheduleMaster(input models.ScheduleMaster) error {
 		input.Id = selectedBusLine.Id
 		//input.Line_descr = input.Line_descr + " Update"
 	}
-	r = DB.Table("SCHEDULEMASTER").Save(&input)
+	r = DB.Table(SCHEDULEMASTERTABLE).Save(&input)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -40,7 +40,7 @@ func SaveScheduleMaster(input models.ScheduleMaster) error {
 }
 
 func DeleteScheduleMaster(trans *gorm.DB) error {
-	if err := trans.Table("SCHEDULEMASTER").Where("1=1").Delete(&models.ScheduleMaster{}).Error; err != nil {
+	if err := trans.Table(SCHEDULEMASTERTABLE).Where("1=1").Delete(&models.ScheduleMaster{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}

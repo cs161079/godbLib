@@ -8,7 +8,7 @@ import (
 func SelectScheduleTime(lineCode int64, sdcCode int32) ([]models.ScheduleTime, error) {
 	//var selectedPtr *oasaSyncModel.Busline
 	var selectedVal []models.ScheduleTime
-	r := DB.Table("SCHEDULETIME").Where("line_code = ? and sdc_code = ?", lineCode, sdcCode).Find(&selectedVal)
+	r := DB.Table(SCHEDULETIMETABLE).Where("line_code = ? and sdc_code = ?", lineCode, sdcCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -24,7 +24,7 @@ func SelectScheduleTime(lineCode int64, sdcCode int32) ([]models.ScheduleTime, e
 func SelectScheduleTimeByKey(lineCode int64, sdcCode int32, tTime string, typ int) ([]models.ScheduleTime, error) {
 	//var selectedPtr *oasaSyncModel.Busline
 	var selectedVal []models.ScheduleTime
-	r := DB.Table("SCHEDULETIME").Where("line_code = ? and sdc_code = ? and start_time = ? and type = ?", lineCode, sdcCode, tTime, typ).Find(&selectedVal)
+	r := DB.Table(SCHEDULETIMETABLE).Where("line_code = ? and sdc_code = ? and start_time = ? and type = ?", lineCode, sdcCode, tTime, typ).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			return nil, r.Error
@@ -46,7 +46,7 @@ func SaveScheduleTime(input models.ScheduleTime) error {
 	if sdcTime != nil {
 		return nil
 	}
-	r = DB.Table("SCHEDULETIME").Create(&input)
+	r = DB.Table(SCHEDULETIMETABLE).Create(&input)
 	if r.Error != nil {
 		return r.Error
 	}
@@ -54,7 +54,7 @@ func SaveScheduleTime(input models.ScheduleTime) error {
 }
 
 func DeleteScheduleTime(trans *gorm.DB) error {
-	if err := trans.Table("SCHEDULETIME").Where("1=1").Delete(&models.ScheduleTime{}).Error; err != nil {
+	if err := trans.Table(SCHEDULETIMETABLE).Where("1=1").Delete(&models.ScheduleTime{}).Error; err != nil {
 		trans.Rollback()
 		return err
 	}
