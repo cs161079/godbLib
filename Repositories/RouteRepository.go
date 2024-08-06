@@ -7,7 +7,7 @@ import (
 
 func SelectByRouteCode(routeCode int32) (*models.Route, error) {
 	var selectedVal models.Route
-	r := DB.Table("ROUTE").Where("route_code = ?", routeCode).Find(&selectedVal)
+	r := DB.Table(ROUTETABLE).Where("route_code = ?", routeCode).Find(&selectedVal)
 	if r != nil {
 		if r.Error != nil {
 			// fmt.Println(r.Error.Error())
@@ -23,7 +23,7 @@ func SelectByRouteCode(routeCode int32) (*models.Route, error) {
 
 func SelectRouteByLineCode(lineCode int32) (*[]models.Route, error) {
 	var selectedVal []models.Route
-	r := DB.Table("ROUTE").Where("line_code = ?", lineCode).Find(&selectedVal)
+	r := DB.Table(ROUTETABLE).Where("line_code = ?", lineCode).Find(&selectedVal)
 	if r.Error != nil {
 		return nil, r.Error
 	}
