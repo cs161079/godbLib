@@ -36,24 +36,15 @@ type Route struct {
 */
 
 type RouteDto struct {
-	Id         int64 `json:"Id"`
-	Route_Code int32 `json:"route_code"`
-	// Line_Code       int32         `json:"line_code"`
-	Route_Descr     string        `json:"route_descr"`
-	Route_Descr_Eng string        `json:"route_descr_eng"`
-	Route_Type      int8          `json:"route_type"`
-	Route_Distance  float32       `json:"route_distance"`
-	Stops           []Stop        `json:"stops"`
-	RouteDetails    []RouteDetail `json:"routeDetails"`
-}
-
-//**********************************************************
-
-// ********* Struct for Route Details Entities **************
-type RouteDetail struct {
-	Routed_x     float32 `json:"routeLati" oasa:"routed_x"`
-	Routed_y     float32 `json:"routeLong" oasa:"routed_y"`
-	Routed_order int16   `json:"routeOrder" oasa:"routed_order"`
+	Id              int64     `json:"Id"`
+	Route_Code      int32     `json:"route_code"`
+	Line_Code       int32     `json:"line_code"`
+	Route_Descr     string    `json:"route_descr"`
+	Route_Descr_Eng string    `json:"route_descr_eng"`
+	Route_Type      int8      `json:"route_type"`
+	Route_Distance  float32   `json:"route_distance"`
+	Stops           []Stop    `json:"stops"`
+	RouteDetails    []Route01 `json:"routeDetails"`
 }
 
 //**********************************************************

@@ -41,15 +41,15 @@ type Line struct {
 *************************************************
 */
 type LineDto struct {
-	Id             int64               `json:"id"`
-	Ml_Code        int64               `json:"ml_code"`
-	Sdc_Code       int64               `json:"sdc_code"`
-	Line_Code      int32               `json:"line_code"`
-	Line_Id        string              `json:"line_id"`
-	Line_Descr     string              `json:"line_descr"`
-	Line_Descr_Eng string              `json:"line_descr_eng"`
-	Routes         []RouteDto          `json:"routes"`
-	Schedules      []ScheduleMasterDto `json:"scheduleDay"`
+	Id             int64      `json:"id"`
+	Ml_Code        int64      `json:"ml_code"`
+	Sdc_Code       int64      `json:"sdc_code"`
+	Line_Code      int32      `json:"line_code"`
+	Line_Id        string     `json:"line_id"`
+	Line_Descr     string     `json:"line_descr"`
+	Line_Descr_Eng string     `json:"line_descr_eng"`
+	Routes         []RouteDto `json:"routes"`
+	Schedules      []Schedule `json:"scheduleDay"`
 }
 
 type LineArrDto []LineDto

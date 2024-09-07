@@ -2,7 +2,16 @@ package mapper
 
 import models "github.com/cs161079/godbLib/Models"
 
-func RouteMapper(source any) models.RouteOasa {
+type RouteMapper interface {
+	GeneralRoute(source any) models.RouteOasa
+	OasaToRouteDto(source models.RouteOasa) models.RouteDto
+	DtoToRoute(source models.RouteDto) models.Route
+}
+
+type routeMapper struct {
+}
+
+func (m routeMapper) GeneralRoute(source any) models.RouteOasa {
 	var busRouteOb models.RouteOasa
 	vMap, ok := source.(map[string]interface{})
 	if !ok {
@@ -13,13 +22,13 @@ func RouteMapper(source any) models.RouteOasa {
 	return busRouteOb
 }
 
-func RouteOasaToRouteDto(source models.RouteOasa) models.RouteDto {
+func (m routeMapper) OasaToRouteDto(source models.RouteOasa) models.RouteDto {
 	var target models.RouteDto
 	structMapper02(source, &target)
 	return target
 }
 
-func RouteDtoToRoute(source models.RouteDto) models.Route {
+func (m routeMapper) DtoToRoute(source models.RouteDto) models.Route {
 	var target models.Route
 	structMapper02(source, &target)
 	return target

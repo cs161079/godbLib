@@ -1,17 +1,5 @@
 package models
 
-import "time"
-
-type rawTime []byte
-
-func (t rawTime) Time() time.Time {
-	results, err := time.Parse("15:04:05", string(t))
-	if err != nil {
-		panic(err.Error())
-	}
-	return results
-}
-
 /*
 ***************************************************
 This struct is to get data from OASA Application
@@ -22,53 +10,12 @@ type ScheduleOasa struct {
 	Sdc_Code      int32  `json:"scheduleCode" oasa:"sdc_code"`
 }
 
-type ScheduleTimes struct {
-	Go   []ScheduleTimeDto `oasa:"go"`
-	Come []ScheduleTimeDto `oasa:"come"`
-}
-
-/*
-***************************************************
- */
-
-type ScheduleMasterDto struct {
-	Sdc_Descr     string        `json:"sdc_descr" oasa:"sdc_descr"`
-	Sdc_Descr_Eng string        `json:"sdc_descr_eng" oasa:"sdc_descr_eng"`
-	Sdc_Code      int32         `json:"sdc_code" oasa:"sdc_code"`
-	ShcedeLine    ScheduleTimes `json:"scheduleLine"`
-}
-
-type ScheduleTimeDto struct {
-	//Line_Code  int64     `json:"line_code" oasa:"line_code"`
-	Start_Time string `json:"start_time" oasa:"sde_start1" type:"time"`
-	Type       int8   `json:"type"`
-}
-
-type ScheduleTime struct {
-	Sdc_Code   int32  `json:"sdc_code" gorm:"primaryKey"`
-	Line_Code  int64  `json:"line_code" gorm:"primaryKey"`
-	Start_Time string `json:"start_time" gorm:"primaryKeys"`
-	Type       int8   `json:"type" gorm:"primaryKey"`
-}
-
-// type ScheduleLineDto struct {
-// 	Line_Code  int64     `json:"line_code"`
-// 	Sdc_Code   int32     `json:"sdc_code"`
-// 	Start_Time time.Time `json:"start_time"`
-// 	Type       int8      `json:"type"`
-// }
-
-// type ScheduleLine struct {
-// 	Line_Code  int64   `json:"line_code"`
-// 	Sdc_Code   int32   `json:"sdc_code"`
-// 	Start_Time rawTime `json:"start_time"`
-// 	Type       int8    `json:"type"`
-// }
-
-type ScheduleMaster struct {
-	Id            int64  `json:"id"`
-	Sdc_Descr     string `json:"sdc_descr"`
-	Sdc_Descr_Eng string `json:"sdc_descr_eng"`
-	Sdc_Code      int32  `json:"sdc_code"`
-	Line_Code     int64  `json:"line_code"`
+type Schedule struct {
+	Id            int64        `json:"id"`
+	Sdc_Descr     string       `json:"sdc_descr"`
+	Sdc_Descr_Eng string       `json:"sdc_descr_eng"`
+	Sdc_Code      int32        `json:"sdc_code"`
+	Line_Code     int64        `json:"line_code"`
+	Go            []Schedule01 `oasa:"go"`
+	Come          []Schedule01 `oasa:"come"`
 }

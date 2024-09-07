@@ -124,32 +124,3 @@ func ScheduleMasterLine(source any) models.ScheduleOasa {
 	internalMapper(vMap, &result)
 	return result
 }
-
-// func BussLineMapper(source map[string]interface{}) models.Line {
-// 	var busLineOb models.Line
-// 	internalMapper(source, &busLineOb)
-
-// 	return busLineOb
-// }
-
-func SheduleMasterLineDtoMapper(source map[string]interface{}) models.ScheduleMaster {
-	var busSheduleMaster models.ScheduleMaster
-	internalMapper(source, &busSheduleMaster)
-	return busSheduleMaster
-}
-
-func ScheduleMasterLineDtoToScheduleMasterLine(source models.ScheduleMaster) models.ScheduleMaster {
-	var result models.ScheduleMaster
-	structMapper(source, &result)
-	return result
-}
-
-func RouteDetailDtoMapper(source any) models.RouteDetail {
-	var routeDetailDto models.RouteDetail
-	vMap, ok := source.(map[string]interface{})
-	if !ok {
-		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
-	}
-	internalMapper(vMap, &routeDetailDto)
-	return routeDetailDto
-}

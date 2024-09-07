@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -14,12 +15,31 @@ import (
 	"gorm.io/gorm"
 )
 
-type DataSource struct {
+type Connection interface {
+	GetStatistics() (*sql.DBStats, error)
+	GetConnection() *connection
+}
+
+type connection struct {
+	DB *gorm.DB
+}
+
+type Datasource interface {
+	DatasourceUrl() (string, error)
+}
+
+type datasource struct {
 	Address      *string
 	Port         *int32
 	User         string
 	Password     string
 	DatabaseName string
+}
+
+func (ds datasource) DatasourceUrl() string {
+	return fmt.Sprintf(dataSourceFormat, ds.User, ds.Password,
+		*ds.Address, *ds.Port, ds.DatabaseName)
+
 }
 
 const (
@@ -29,35 +49,48 @@ const (
 	ROUTESTOPSTABLE     = "routestops"
 	SCHEDULEMASTERTABLE = "schedulemaster"
 	SCHEDULETIMETABLE   = "scheduletime"
+	ROUTEDETAILTABLE    = "routedetail"
+	SYNCVERSIONSTABLE   = "syncversionstable"
 )
 
 const dataSourceFormat = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local"
 
-type DatasourceLink interface {
-	DatasourceUrl() (string, error)
-}
-
-func (ds DataSource) DatasourceUrl() string {
-	return fmt.Sprintf(dataSourceFormat, ds.User, ds.Password,
-		*ds.Address, *ds.Port, ds.DatabaseName)
-
-}
-
-func getDataSource() (*DataSource, error) {
+func createDataSource() (*datasource, error) {
+	// ******** Φορτώνουμε τις μεταβλητές ************************
 	err := godotenv.Load(".env")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Error loading enviroment variables.[%s]", err.Error())
 	}
+
+	// ******** Get Database IP from env, if empty put a default IP ******************
 	ip := os.Getenv("database.ip")
+	var defaultIp = "127.0.0.1"
+	if ip == "" {
+		ip = defaultIp
+	}
+	// *******************************************************************************
+
+	// ************* Get Database port from env, if empty put a default port *********
 	port, err := strconv.ParseInt(os.Getenv("database.port"), 10, 32)
+	if err != nil {
+		return nil, fmt.Errorf("Error converting database.port variable.[%s]", err.Error())
+	}
+
+	var defaultPort int32 = 3306
+
+	if port == 0 {
+		port = int64(defaultPort)
+	}
+	// ********************************************************************************
+
+	// ************ Rest information for database connection **************************
 	user := os.Getenv("database.user")
 	password := os.Getenv("database.password")
 	database := os.Getenv("database.dbname")
-	if err != nil {
-		return nil, err
-	}
+	// ********************************************************************************
+
 	var port32 = int32(port)
-	return &DataSource{
+	return &datasource{
 		Address:      &ip,
 		Port:         &port32,
 		User:         user,
@@ -68,20 +101,11 @@ func getDataSource() (*DataSource, error) {
 
 // This is core for DB
 
-var DB *gorm.DB
-
-func IntializeDb() error {
-	dataSource, err := getDataSource()
+func CreateConnection() (*Connection, error) {
+	var vConnection connection = connection{}
+	dataSource, err := createDataSource()
 	if err != nil {
-		return err
-	}
-	var defaultIp = "127.0.0.1"
-	var defaultPort int32 = 3306
-	if dataSource.Address == nil {
-		dataSource.Address = &defaultIp
-	}
-	if dataSource.Port == nil {
-		dataSource.Port = &defaultPort
+		return nil, err
 	}
 
 	dialector := mysql.New(mysql.Config{
@@ -93,35 +117,36 @@ func IntializeDb() error {
 		SkipInitializeWithVersion: false,                      // auto configure based on currently MySQL version
 	})
 
-	// newLogger := logger.New(
-	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
-	// 	logger.Config{
-	// 		SlowThreshold: time.Second, // Slow SQL threshold
-	// 		LogLevel:      logger.Info, // Log level
-	// 		// IgnoreRecordNotFoundError: true,         // Ignore ErrRecordNotFound error for logger
-	// 		ParameterizedQueries: true, // Don't include params in the SQL log
-	// 		Colorful:             true, // Disable color
-	// 	},
-	// )
-
-	database, err := gorm.Open(dialector, &gorm.Config{
+	vConnection.DB, err = gorm.Open(dialector, &gorm.Config{
 		Logger: logger.GetGormLogger(),
 	})
 
 	if err != nil {
 		// fmt.Println("An Error occured on creation of database connection")
-		return err
+		return nil, err
 	}
 
-	sqlDb, err := database.DB()
+	sqlDb, err := vConnection.DB.DB()
 	if err != nil {
 		// fmt.Println("An Error Occured... ", err.Error())
-		return err
+		return nil, err
 	}
-	sqlDb.SetMaxIdleConns(10)
+	sqlDb.SetMaxIdleConns(5)
 	sqlDb.SetConnMaxLifetime(time.Minute)
-	sqlDb.SetMaxOpenConns(100)
+	sqlDb.SetMaxOpenConns(5)
 
-	DB = database
-	return nil
+	return &vConnection, nil
+}
+
+func (c connection) GetStatistics() (*sql.DBStats, error) {
+	vSql, err := c.DB.DB()
+	if err != nil {
+		return nil, err
+	}
+	result := vSql.Stats()
+	return &result, nil
+}
+
+func (c connection) GetConnection() *connection {
+	return &c
 }

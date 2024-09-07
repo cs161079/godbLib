@@ -13,7 +13,8 @@ import (
 )
 
 type GormLogger struct {
-	LogLevel gormlogger.LogLevel
+	LogLevel  gormlogger.LogLevel
+	Formatter *easy.Formatter
 }
 
 const (
@@ -72,63 +73,39 @@ func (l *GormLogger) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 }
 
 // Info prints info
-func (l GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
+func (l *GormLogger) Info(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Info {
 		// Logger.Infof(str, args...)
 		logger.WithFields(logger.Fields{
 			"at": time.Now().Format("2006-01-02 15:04:05"),
-		}).Infof(str, args)
+		}).Infof(str+"\n", args)
 	}
 }
 
 // Warn prints warn messages
-func (l GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
+func (l *GormLogger) Warn(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Warn {
 		// Logger.Warnf(str, args...)
 		logger.WithFields(logger.Fields{
 			"at": time.Now().Format("2006-01-02 15:04:05"),
-		}).Warnf(str, args)
+		}).Warnf(str+"\n", args)
 	}
 
 }
 
 // Error prints error messages
-func (l GormLogger) Error(ctx context.Context, str string, args ...interface{}) {
+func (l *GormLogger) Error(ctx context.Context, str string, args ...interface{}) {
 	if l.LogLevel >= gormlogger.Error {
 		// Logger.Errorf(str, args...)
-		logger.WithFields(logger.Fields{
-			"at": time.Now().Format("2006-01-02 15:04:05"),
-		}).Infof(str, args)
+		//logger.WithFields(logger.Fields{
+		//	"at": time.Now().Format("2006-01-02 15:04:05"),
+		//}).Errorf(str+"\n", args)
+		logger.Error(str, args)
 	}
 }
 
 // Trace prints trace messages
-func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
-	// elapsed := time.Since(begin)
-	// sql, rows := fc()
-	// Logger.Info("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-	// if l.LogLevel <= 0 {
-	// 	return
-	// }
-	// elapsed := time.Since(begin)
-	// if l.LogLevel >= gormlogger.Info {
-	// 	sql, rows := fc()
-	// 	Logger.Debug("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-	// 	return
-	// }
-
-	// if l.LogLevel >= gormlogger.Warn {
-	// 	sql, rows := fc()
-	// 	Logger.Warn("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-	// 	return
-	// }
-
-	// if l.LogLevel >= gormlogger.Error {
-	// 	sql, rows := fc()
-	// 	Logger.Error("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
-	// 	return
-	// }
-
+func (l *GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel <= gormlogger.Silent {
 		return
 	}
@@ -139,10 +116,12 @@ func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 		sql, rows := fc()
 		if rows == -1 {
 			//l.Printf(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, "-", sql)
-			Logger.Error("[", elapsed.Milliseconds(), " ms, ", "sql -> ", sql)
+			//Logger.Error("[", elapsed.Milliseconds(), " ms, ", "sql -> ", sql, "\n")
+			l.Error(nil, fmt.Sprintf("[%d ms, sql -> %s", elapsed.Milliseconds(), sql))
 		} else {
 			//l.Printf(l.traceErrStr, utils.FileWithLineNum(), err, float64(elapsed.Nanoseconds())/1e6, rows, sql)
-			Logger.Error("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql)
+			//Logger.Error("[", elapsed.Milliseconds(), " ms, ", rows, " rows] ", "sql -> ", sql, "\n")
+			l.Error(nil, fmt.Sprintf("[%d ms, %d rows, sql -> %s", elapsed.Milliseconds(), rows, sql))
 		}
 	case l.LogLevel >= gormlogger.Warn:
 		sql, rows := fc()
@@ -170,5 +149,9 @@ func (l GormLogger) Trace(ctx context.Context, begin time.Time, fc func() (strin
 func GetGormLogger() *GormLogger {
 	return &GormLogger{
 		LogLevel: gormlogger.Error,
+		Formatter: &easy.Formatter{
+			TimestampFormat: "2006-01-02 15:04:05",
+			LogFormat:       "[%lvl%]: %time% - %msg%",
+		},
 	}
 }

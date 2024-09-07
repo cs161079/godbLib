@@ -10,6 +10,11 @@ require (
 )
 
 require (
+	github.com/stretchr/testify v1.7.1 // indirect
+	gorm.io/datatypes v1.2.1 // indirect
+)
+
+require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/fatih/structs v1.1.0
 	github.com/jinzhu/inflection v1.0.0 // indirect

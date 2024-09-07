@@ -1,1 +1,5 @@
-enviroment.env
+.env
+tmp/getLines.txt
+tmp/getRoutes.txt
+tmp/getRouteStops.txt
+tmp/getStops.txt
