@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewLineRepository(iConnection *db.Connection) LineRepository {
+func NewLineRepository(iConnection *gorm.DB) LineRepository {
 	return lineRepository{
-		DB: (*iConnection).GetConnection().DB,
+		DB: iConnection,
 	}
 }
 
@@ -18,16 +18,17 @@ type lineRepository struct {
 }
 
 type LineRepository interface {
-	SelectByLineCode(lineCode int32) (*models.Line, error)
-	InsertLine(line *models.Line) (*models.Line, error)
-	UpdateLine(line *models.Line) (*models.Line, error)
+	SelectByCode(lineCode int32) (*models.Line, error)
+	Insert(line *models.Line) (*models.Line, error)
+	InsertArray([]models.Line) ([]models.Line, error)
+	Update(line *models.Line) (*models.Line, error)
 	LineList01() ([]models.Line, error)
-	DeleteLines() error
-	LineWithTx(*gorm.DB) lineRepository
+	DeleteAll() error
+	WithTx(*gorm.DB) lineRepository
 }
 
 // withTx creates a new repository instance with the given transaction
-func (r lineRepository) LineWithTx(tx *gorm.DB) lineRepository {
+func (r lineRepository) WithTx(tx *gorm.DB) lineRepository {
 	if tx == nil {
 		logger.WARN("Database Tranction not exist.")
 		return r
@@ -36,7 +37,7 @@ func (r lineRepository) LineWithTx(tx *gorm.DB) lineRepository {
 	return r
 }
 
-func (r lineRepository) SelectByLineCode(lineCode int32) (*models.Line, error) {
+func (r lineRepository) SelectByCode(lineCode int32) (*models.Line, error) {
 	var selectedVal models.Line
 	res := r.DB.Table(db.LINETABLE).Where("line_code = ?", lineCode).Find(&selectedVal)
 	if res.Error != nil {
@@ -45,7 +46,7 @@ func (r lineRepository) SelectByLineCode(lineCode int32) (*models.Line, error) {
 	return &selectedVal, nil
 }
 
-func (r lineRepository) InsertLine(line *models.Line) (*models.Line, error) {
+func (r lineRepository) Insert(line *models.Line) (*models.Line, error) {
 	trxRes := r.DB.Table(db.LINETABLE).Create(line)
 	if trxRes.Error != nil {
 		return nil, trxRes.Error
@@ -53,7 +54,7 @@ func (r lineRepository) InsertLine(line *models.Line) (*models.Line, error) {
 	return line, nil
 }
 
-func (r lineRepository) UpdateLine(line *models.Line) (*models.Line, error) {
+func (r lineRepository) Update(line *models.Line) (*models.Line, error) {
 	trxRes := r.DB.Table(db.LINETABLE).Save(line)
 	if trxRes.Error != nil {
 		return nil, trxRes.Error
@@ -72,9 +73,16 @@ func (r lineRepository) LineList01() ([]models.Line, error) {
 	return result, nil
 }
 
-func (r lineRepository) DeleteLines() error {
+func (r lineRepository) DeleteAll() error {
 	if err := r.DB.Table(db.LINETABLE).Where("1=1").Delete(&models.Line{}).Error; err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r lineRepository) InsertArray(entityArr []models.Line) ([]models.Line, error) {
+	if err := r.DB.Table(db.LINETABLE).Save(entityArr).Error; err != nil {
+		return nil, err
+	}
+	return entityArr, nil
 }

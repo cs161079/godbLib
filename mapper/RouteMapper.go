@@ -3,7 +3,7 @@ package mapper
 import models "github.com/cs161079/godbLib/Models"
 
 type RouteMapper interface {
-	GeneralRoute(source any) models.RouteOasa
+	GeneralRoute(map[string]interface{}) models.RouteOasa
 	OasaToRouteDto(source models.RouteOasa) models.RouteDto
 	DtoToRoute(source models.RouteDto) models.Route
 }
@@ -11,13 +11,9 @@ type RouteMapper interface {
 type routeMapper struct {
 }
 
-func (m routeMapper) GeneralRoute(source any) models.RouteOasa {
+func (m routeMapper) GeneralRoute(source map[string]interface{}) models.RouteOasa {
 	var busRouteOb models.RouteOasa
-	vMap, ok := source.(map[string]interface{})
-	if !ok {
-		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
-	}
-	internalMapper(vMap, &busRouteOb)
+	internalMapper(source, &busRouteOb)
 
 	return busRouteOb
 }
@@ -32,4 +28,8 @@ func (m routeMapper) DtoToRoute(source models.RouteDto) models.Route {
 	var target models.Route
 	structMapper02(source, &target)
 	return target
+}
+
+func NewRouteMapper() RouteMapper {
+	return routeMapper{}
 }

@@ -4,18 +4,43 @@ import (
 	"fmt"
 
 	models "github.com/cs161079/godbLib/Models"
+	logger "github.com/cs161079/godbLib/Utils/goLogger"
 	"github.com/cs161079/godbLib/db"
 
 	"gorm.io/gorm"
 )
 
-type StopRepository interface{}
+type StopRepository interface {
+	SelectByCode(int32) (*models.Stop, error)
+	Insert(models.Stop) (*models.Stop, error)
+	InsertArray([]models.Stop) ([]models.Stop, error)
+	Update(models.Stop) (*models.Stop, error)
+	List01(int32) (*[]models.Stop, error)
+	DeleteAll() error
+	SelectClosestStops(models.Point, float32, float32) ([]models.StopDto, error)
+	WithTx(*gorm.DB) stopRepository
+}
 
 type stopRepository struct {
 	DB *gorm.DB
 }
 
-func (r stopRepository) SelectByStopCode(stopCode int64) (*models.Stop, error) {
+func NewStopRepository(connection *gorm.DB) StopRepository {
+	return stopRepository{
+		DB: connection,
+	}
+}
+
+func (r stopRepository) WithTx(tx *gorm.DB) stopRepository {
+	if tx == nil {
+		logger.WARN("Database Tranction not exist.")
+		return r
+	}
+	r.DB = tx
+	return r
+}
+
+func (r stopRepository) SelectByCode(stopCode int32) (*models.Stop, error) {
 	var selectedVal models.Stop
 	res := r.DB.Table(db.STOPTABLE).Where("stop_code = ?", stopCode).Find(&selectedVal)
 	if res.Error != nil {
@@ -25,7 +50,7 @@ func (r stopRepository) SelectByStopCode(stopCode int64) (*models.Stop, error) {
 	return &selectedVal, nil
 }
 
-func (r stopRepository) InsertStop(busStop models.Stop) (*models.Stop, error) {
+func (r stopRepository) Insert(busStop models.Stop) (*models.Stop, error) {
 	res := r.DB.Table(db.STOPTABLE).Create(&busStop)
 	if res.Error != nil {
 		return nil, res.Error
@@ -33,7 +58,7 @@ func (r stopRepository) InsertStop(busStop models.Stop) (*models.Stop, error) {
 	return &busStop, nil
 }
 
-func (r stopRepository) UpdateStop(busStop models.Stop) (*models.Stop, error) {
+func (r stopRepository) Update(busStop models.Stop) (*models.Stop, error) {
 	res := r.DB.Table(db.STOPTABLE).Save(&busStop)
 	if res.Error != nil {
 		return nil, res.Error
@@ -41,7 +66,7 @@ func (r stopRepository) UpdateStop(busStop models.Stop) (*models.Stop, error) {
 	return &busStop, nil
 }
 
-func (r stopRepository) StopList01(routeCode int32) (*[]models.Stop, error) {
+func (r stopRepository) List01(routeCode int32) (*[]models.Stop, error) {
 	var result []models.Stop
 	res := r.DB.Table(db.STOPTABLE).
 		Select("stop.*, "+
@@ -54,7 +79,7 @@ func (r stopRepository) StopList01(routeCode int32) (*[]models.Stop, error) {
 	return &result, nil
 }
 
-func (r stopRepository) DeleteStop() error {
+func (r stopRepository) DeleteAll() error {
 	if err := r.DB.Table(db.STOPTABLE).Where("1=1").Delete(&models.Stop{}).Error; err != nil {
 		return err
 	}
@@ -77,4 +102,11 @@ func (r stopRepository) SelectClosestStops(point models.Point, from float32, to 
 	}
 	return resultList, nil
 
+}
+
+func (r stopRepository) InsertArray(entityArray []models.Stop) ([]models.Stop, error) {
+	if err := r.DB.Table(db.STOPTABLE).Save(entityArray).Error; err != nil {
+		return nil, err
+	}
+	return entityArray, nil
 }

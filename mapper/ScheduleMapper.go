@@ -23,7 +23,7 @@ func (m scheduleMapper) DtoToSchedule(source models.Schedule) models.Schedule {
 	return target
 }
 
-func (m scheduleMapper) ScheduleGeneralMapper(source map[string]interface{}) models.ScheduleOasa {
+func (m scheduleMapper) GeneralSchedule(source map[string]interface{}) models.ScheduleOasa {
 	var res models.ScheduleOasa
 	internalMapper(source, &res)
 	return res

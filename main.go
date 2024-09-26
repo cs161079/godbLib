@@ -3,16 +3,15 @@ package main
 import (
 	"fmt"
 	"os"
-	"strings"
+	"time"
 
 	models "github.com/cs161079/godbLib/Models"
 	logger "github.com/cs161079/godbLib/Utils/goLogger"
-	oasaSyncWeb "github.com/cs161079/godbLib/Web"
 	"github.com/cs161079/godbLib/db"
 	mapper "github.com/cs161079/godbLib/mapper"
 	"github.com/cs161079/godbLib/repository"
+	"github.com/cs161079/godbLib/service"
 	"github.com/joho/godotenv"
-	"gorm.io/gorm"
 )
 
 func initEnviroment() {
@@ -25,297 +24,12 @@ func initEnviroment() {
 func initProgram() {
 	logger.InitLogger("godbLib")
 	initEnviroment()
-	err := db.IntializeDb()
+	_, err := db.CreateConnection()
 
 	if err != nil {
 		panic(err)
 	}
 	logger.INFO(fmt.Sprintf("database connection established!!"))
-}
-
-func deleteAllData(connection *gorm.DB) error {
-	//trans := db.DB.Begin()
-	//if trans.Error != nil {
-	//	return trans.Error
-	//}
-
-	if err := db.DeleteRouteStops(connection); err != nil {
-		//trans.Rollback()
-		return err
-	}
-	if err := db.DeleteStop(connection); err != nil {
-		//trans.Rollback()
-		return err
-	}
-	if err := db.DeleteRoute(connection); err != nil {
-		//trans.Rollback()
-		return err
-	}
-	if err := db.DeleteScheduleTime(connection); err != nil {
-		//trans.Rollback()
-		return err
-	}
-	if err := db.DeleteScheduleMaster(connection); err != nil {
-		//trans.Rollback()
-		return err
-	}
-	//if err := db.DeleteLines(connection); err != nil {
-	//	//trans.Rollback()
-	//	return err
-	//}
-	//
-	//if err := db.ZeroAllSequence(trans); err != nil {
-	//	return err
-	//}
-
-	//if err := trans.Commit().Error; err != nil {
-	//	return err
-	//}
-	logger.INFO("ERASE ALL DATA FROM DATABASE FINISHED")
-	return nil
-
-}
-
-func saveAllData(connection *gorm.DB, allData *[]models.LineDto) error {
-	//logger.INFO("INSERTING DATA IN DATABASE START")
-	for _, line := range *allData {
-		//err := db.SaveLine(connection, mapper.LineDtoToLine(line))
-		//if err != nil {
-		//	return err
-		//}
-		for _, route := range line.Routes {
-			err := db.SaveRoute(mapper.RouteDtoToRoute(route))
-			if err != nil {
-				return err
-			}
-
-			for i, stop := range route.Stops {
-				err := db.SaveStop(stop)
-				if err != nil {
-					return err
-				}
-				err = db.SaveRouteStops(models.RouteStops{
-					Route_code: route.Route_Code,
-					Stop_code:  stop.Stop_code,
-					Senu:       int16(i + 1),
-				})
-				if err != nil {
-					return err
-				}
-			}
-		}
-
-		for _, schedule := range line.Schedules {
-			finalSchedule := mapper.ScheduleMasterDtoToScheduleMaster(schedule)
-			finalSchedule.Line_Code = int64(line.Line_Code)
-			err := db.SaveScheduleMaster(finalSchedule)
-			if err != nil {
-				return err
-			}
-			for _, scheduleTime := range schedule.ShcedeLine.Go {
-				finalScheduleTime := mapper.ScheduleTimeDtoToScheduleTime(scheduleTime)
-				finalScheduleTime.Sdc_Code = schedule.Sdc_Code
-				finalScheduleTime.Line_Code = int64(line.Line_Code)
-				err := db.SaveScheduleTime(finalScheduleTime)
-				if err != nil {
-					return err
-				}
-			}
-			for _, scheduleTime := range schedule.ShcedeLine.Come {
-				finalScheduleTime := mapper.ScheduleTimeDtoToScheduleTime(scheduleTime)
-				finalScheduleTime.Sdc_Code = schedule.Sdc_Code
-				finalScheduleTime.Line_Code = int64(line.Line_Code)
-				err := db.SaveScheduleTime(finalScheduleTime)
-				if err != nil {
-					return err
-				}
-			}
-
-		}
-	}
-	//logger.INFO("INSERTING DATA IN DATABASE FINISHED")
-	return nil
-}
-
-//func SyncData(allData *[]models.LineDto) error {
-//	//logger.INFO("SYNC DATA FROM OASA START")
-//	// ****** Http Request to get All Bus Lines ******
-//	lines, err := GetBusLines()
-//	if err != nil {
-//		return err
-//	}
-//
-//	// ***********************************************
-//	//var currentLineId = lines[0].Line_Id
-//	// ******** For loop in array of lines ***********
-//	for i := range lines {
-//		// **** Http Request to get all Routes for every Line *******
-//		lines[i].Routes, err = GetBusRoutes(lines[i].Line_Code)
-//		if err != nil {
-//			return err
-//		}
-//		// **********************************************************
-//		// ************* For Loop in array of Routes ****************
-//		for j := range lines[i].Routes {
-//			lines[i].Routes[j].Line_Code = lines[i].Line_Code
-//			// *** Http Request to Get stop for every route in array ****
-//			lines[i].Routes[j].Stops, err = GetBusStops(lines[i].Routes[j].Route_Code)
-//			if err != nil {
-//				return err
-//			}
-//			// ***********************************************************
-//			// ******* Http Request to get details for every route *******
-//			lines[i].Routes[j].RouteDetails, err = GetRouteDetails(lines[i].Routes[j].Route_Code)
-//			if err != nil {
-//				return err
-//			}
-//			// **********************************************************
-//		}
-//		// ********* Http Request get Schedule Master Line **************
-//		lines[i].Schedules, err = GetScheduleMasterLine(int64(lines[i].Line_Code))
-//		if err != nil {
-//			return err
-//		}
-//		// **************************************************************
-//		for k := range lines[i].Schedules {
-//			result, err := GetScheduleTime(int32(lines[i].Ml_Code), lines[i].Line_Code, lines[i].Schedules[k].Sdc_Code)
-//			if err != nil {
-//				return err
-//			}
-//			lines[i].Schedules[k].ShcedeLine = *result
-//		}
-//		dailyTimes, err := GetDailySchedule(lines[i].Line_Code)
-//		if err != nil {
-//			return err
-//		}
-//		lines[i].Schedules = append(lines[i].Schedules, *dailyTimes)
-//		//printProgressBar(i, len(tempLines), "Progress", "Complete", 25, "=")
-//	}
-//	// **************************************************
-//	*allData = lines
-//	///logger.INFO("SYNC DATA FROM OASA FINISHED")
-//	return nil
-//}
-
-func GetDailySchedule(lineCode int32) (*models.ScheduleMasterDto, error) {
-	response := oasaSyncWeb.OasaRequestApi("getDailySchedule", map[string]interface{}{"line_code": int64(lineCode)})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-	var dailySchedule models.ScheduleMasterDto = models.ScheduleMasterDto{
-		Sdc_Code:      0,
-		Sdc_Descr:     "ΚΑΘΗΜΕΡΙΝΟ ΠΡΟΓΡΑΜΜΑ",
-		Sdc_Descr_Eng: "DAILY SCHEDULE",
-	}
-	dailySchedule.ShcedeLine = mapper.ScheduleTimesMapper(response.Data.(map[string]interface{}))
-	return &dailySchedule, nil
-}
-
-func GetScheduleMasterLine(lineCode int64) ([]models.ScheduleMasterDto, error) {
-	var result []models.ScheduleMasterDto
-	response := oasaSyncWeb.OasaRequestApi("getScheduleDaysMasterline", map[string]interface{}{"p1": lineCode})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-
-	if response.Data != nil {
-		for _, record := range response.Data.([]interface{}) {
-			result = append(result, mapper.ScheduleOasaToScheduleDto(mapper.ScheduleMasterLine(record.(map[string]interface{}))))
-		}
-	}
-
-	return result, nil
-}
-
-func GetScheduleTime(masteLineCode int32, lineCode int32, sdcCode int32) (*models.ScheduleTimes, error) {
-	var result models.ScheduleTimes
-	response := oasaSyncWeb.OasaRequestApi("getSchedLines", map[string]interface{}{"p1": int64(masteLineCode), "p2": int64(sdcCode), "p3": int64(lineCode)})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-	result = mapper.ScheduleTimesMapper(response.Data.(map[string]interface{}))
-	return &result, nil
-}
-
-func GetLineData() ([]models.LineDto, error) {
-	var result []models.LineDto
-	response := oasaSyncWeb.OasaRequestApi("webGetLinesWithMLInfo", nil)
-	if response.Error != nil {
-		return nil, response.Error
-	}
-
-	if response.Data != nil {
-		for _, record := range response.Data.([]interface{}) {
-			result = append(result, mapper.LineOasaToLine(mapper.LineMapper(record.(map[string]interface{}))))
-		}
-	}
-
-	return result, nil
-}
-
-func GetBusRoutes(linedId int32) ([]models.RouteDto, error) {
-	var result []models.RouteDto
-	response := oasaSyncWeb.OasaRequestApi("webGetRoutes", map[string]interface{}{"p1": int64(linedId)})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-
-	if response.Data != nil {
-		for _, record := range response.Data.([]interface{}) {
-			// fmt.Println("at Index Route ", index)
-			result = append(result, mapper.RouteOasaToRouteDto(mapper.RouteMapper(record.(map[string]interface{}))))
-		}
-	} // fmt.Printf("Routes results %d \n", len(result))
-
-	return result, nil
-}
-
-func GetBusStops(routeCode int32) ([]models.Stop, error) {
-	var result []models.Stop
-	response := oasaSyncWeb.OasaRequestApi("webGetStops", map[string]interface{}{"p1": int64(routeCode)})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-
-	if response.Data != nil {
-		for _, record := range response.Data.([]interface{}) {
-			// fmt.Println("at Index Route ", index)
-			result = append(result, mapper.StopOasaToStop(mapper.StopMapper(record.(map[string]interface{}))))
-		}
-	}
-	// fmt.Printf("Routes results %d \n", len(result))
-
-	return result, nil
-}
-
-func GetRouteDetails(routeCode int32) ([]models.RouteDetail, error) {
-	var result []models.RouteDetail
-	response := oasaSyncWeb.OasaRequestApi("webRouteDetails", map[string]interface{}{"p1": int64(routeCode)})
-	if response.Error != nil {
-		return nil, response.Error
-	}
-
-	if response.Data != nil {
-		for _, record := range response.Data.([]interface{}) {
-			// fmt.Println("at Index Route ", index)
-			result = append(result, mapper.RouteDetailOasaToRouteDetailDto(mapper.RouteDetailDtoMapper(record.(map[string]interface{}))))
-		}
-	}
-	// fmt.Printf("Routes results %d \n", len(result))
-
-	return result, nil
-}
-
-//	func GetDataVersions() error {
-//		var result interface{}
-//		response := oasaSyncWeb.OasaRequestApi("getUVersions", nil)
-//		if response.Error != nil {
-//			return response.Error
-//		}
-//	}
-
-func testForConnection(conn *gorm.DB) error {
-	return nil
 }
 
 // ****************************** TEST ***************************************************
@@ -324,19 +38,20 @@ func testForConnection(conn *gorm.DB) error {
 // ***** τον συγχρονισμό                                                          ********
 // ***************************************************************************************
 func testSyncData(action string) error {
-	resp, err := oasaSyncWeb.MakeRequest(action)
-	if err != nil {
-		return err
+	restSrv := service.NewRestService()
+	response := restSrv.OasaRequestApi02(action)
+	if response.Error != nil {
+		return response.Error
 	}
-	orgResp := *resp
-	trimmedResp := orgResp[1 : len(orgResp)-2]
-	syncDataLines := strings.Split(trimmedResp, "),(")
-	f, err := os.Create(fmt.Sprintf("tmp/%s.txt", action))
+	orgResp := (*response).Data.([]string)
+	//trimmedResp := orgResp[1 : len(orgResp)-2]
+	//syncDataLines := strings.Split(trimmedResp, "),(")
+	f, err := os.Create(fmt.Sprintf("tmp/%s%s.txt", action, time.Now().Format("2006-01-02_15_04_05")))
 	defer f.Close()
 	if err != nil {
 		return err
 	}
-	for _, line := range syncDataLines {
+	for _, line := range orgResp {
 		if _, err = f.Write([]byte(fmt.Sprintf("%s\n", line))); err != nil {
 			return err
 		}
@@ -345,12 +60,13 @@ func testSyncData(action string) error {
 }
 
 func getUIVersions() (*models.UVersions, error) {
+	restSrv := service.NewRestService()
 	var result models.UVersions
-	response := oasaSyncWeb.OasaRequestApi("getUVersions", nil)
+	response := restSrv.OasaRequestApi00("getUVersions", nil)
 	if response.Error != nil {
 		return nil, response.Error
 	}
-	result = mapper.UVersionsOasaToUVersions(mapper.UVersionsMapper(response.Data.(map[string]interface{})))
+	result = mapper.OasaToUVersions(mapper.GeneralUVersions(response.Data.(map[string]interface{})))
 	return &result, nil
 }
 
@@ -368,10 +84,6 @@ func checkUVerisios(dbVersions []models.UVersions, oasaVersions []models.UVersio
 	var routeDetailsUpdate bool = false
 	if oasaVersionsMp[models.UVERSIONS_LINE] > dbVersionsMp[models.UVERSIONS_LINE] {
 		// Download Data for Lines, Update Database
-		_, err := GetLineData()
-		if err != nil {
-			return err
-		}
 		// Update Uversion Table with new revision
 	}
 	if oasaVersionsMp[models.UVERSIONS_ROUTE] > dbVersionsMp[models.UVERSIONS_ROUTE] {
@@ -408,7 +120,13 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	repository.NewLineRepository(connection)
+	lineRepository := repository.NewLineRepository(connection)
+	service.NewLineService(lineRepository)
+
+	err = testSyncData("getSched_series")
+	if err != nil {
+		panic(err.Error())
+	}
 	// repo := &db.Repository{Db: db.DB}
 	// service := &db.LineService{Repo: repo}
 	// err := service.PostLineArray([]models.Line{

@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"time"
 
-	models "github.com/cs161079/godbLib/Models"
 	utils "github.com/cs161079/godbLib/Utils"
 	"github.com/fatih/structs"
 )
@@ -113,14 +112,4 @@ func structMapper02(source any, target any) {
 	if err != nil {
 		panic(err.Error())
 	}
-}
-
-func ScheduleMasterLine(source any) models.ScheduleOasa {
-	var result models.ScheduleOasa
-	vMap, ok := source.(map[string]interface{})
-	if !ok {
-		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
-	}
-	internalMapper(vMap, &result)
-	return result
 }

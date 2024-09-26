@@ -2,6 +2,9 @@ package models
 
 import "sort"
 
+type Entity interface {
+}
+
 /*
 ***************************************************
 This struct is to get data from OASA Application
@@ -30,7 +33,7 @@ type Line struct {
 	Line_Id        string `json:"line_id"`
 	Line_Descr     string `json:"line_descr"`
 	Line_Descr_Eng string `json:"line_descr_eng"`
-	Mld_master     int8   `json:"is_master"`
+	Mld_master     int8   `json:"mld_master"`
 }
 
 /*
@@ -41,7 +44,6 @@ type Line struct {
 *************************************************
 */
 type LineDto struct {
-	Id             int64      `json:"id"`
 	Ml_Code        int64      `json:"ml_code"`
 	Sdc_Code       int64      `json:"sdc_code"`
 	Line_Code      int32      `json:"line_code"`

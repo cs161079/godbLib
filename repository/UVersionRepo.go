@@ -1,65 +1,51 @@
 package repository
 
-// import (
-// 	"context"
-// 	models "github.com/cs161079/godbLib/Models"
-// 	"gorm.io/gorm"
-// )
+import (
+	"context"
 
-// type UVersionRepository interface {
-// 	Create(ctx context.Context, entity *models.UVersions) error
-// 	Update(ctx context.Context, entity *models.UVersions) error
-// 	//Transaction(ctx context.Context, fn func(repo UVersionRepository) error) error
-// 	SelectAll(ctx context.Context) ([]models.UVersions, error)
-// }
+	models "github.com/cs161079/godbLib/Models"
+	logger "github.com/cs161079/godbLib/Utils/goLogger"
+	"github.com/cs161079/godbLib/db"
+	"gorm.io/gorm"
+)
+
+type UVersionRepository interface {
+	Create(entity *models.UVersions) error
+	Update(entity *models.UVersions) error
+	SelectAll(ctx context.Context) ([]models.UVersions, error)
+	WithTx(*gorm.DB) uVersionRepository
+}
+
+type uVersionRepository struct {
+	DB *gorm.DB
+}
 
 // // withTx creates a new repository instance with the given transaction
-// func (r *Repository) withTx(tx *gorm.DB) UVersionRepository {
-// 	return &Repository{
-// 		Db: tx,
-// 	}
-// }
+func (r uVersionRepository) withTx(tx *gorm.DB) uVersionRepository {
+	if tx == nil {
+		logger.WARN("Database transaction does not exist.")
+		return r
+	}
+	r.DB = tx
+	return r
+}
 
 // // Update modifies an existing entity in the database
-// func (r *Repository) Update(ctx context.Context, entity *models.UVersions) error {
-// 	return r.Db.Table(SYNCVERSIONSTABLE).Save(entity).Error
-// }
+func (r uVersionRepository) Update(entity *models.UVersions) error {
+	return r.DB.Table(db.SYNCVERSIONSTABLE).Save(entity).Error
+}
 
-// func (r *Repository) SelectAll(ctx context.Context) ([]models.UVersions, error) {
-// 	var res []models.UVersions
+func (r uVersionRepository) SelectAll() ([]models.UVersions, error) {
+	var res []models.UVersions
 
-// 	if err := r.Db.Table(SYNCVERSIONSTABLE).Find(&res).Error; err != nil {
-// 		return nil, err
-// 	}
-// 	return res, nil
+	if err := r.DB.Table(db.SYNCVERSIONSTABLE).Find(&res).Error; err != nil {
+		return nil, err
+	}
+	return res, nil
 
-// }
-
-// // Transaction manages the transaction lifecycle
-// func (r *Repository) Transaction(ctx context.Context, fn func(repo UVersionRepository) error) error {
-// 	tx := r.Db.Begin()
-// 	if tx.Error != nil {
-// 		return tx.Error
-// 	}
-// 	repo := r.withTx(tx)
-// 	err := fn(repo)
-// 	if err != nil {
-// 		tx.Rollback()
-// 		return err
-// 	}
-// 	return tx.Commit().Error
-// }
+}
 
 // // Create adds a new entity to the database
-// func (r *Repository) Create(ctx context.Context, entity *models.UVersions) error {
-// 	return r.Db.Create(entity).Error
-// }
-
-// type UVersionsService struct {
-// 	repo UVersionRepository
-// }
-
-// // PerformBusinessLogic performs multiple database operations within a transaction
-// func (s *UVersionsService) LinePost(ctx context.Context, uversions *models.UVersions) error {
-// 	return s.repo.Update(ctx, uversions)
-// }
+func (r uVersionRepository) Create(entity *models.UVersions) error {
+	return r.DB.Create(entity).Error
+}

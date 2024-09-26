@@ -4,28 +4,15 @@ import models "github.com/cs161079/godbLib/Models"
 
 type Schedule01Mapper interface {
 	DtoToSchedule01(source models.Schedule01Dto) models.Schedule01
-	Schedule01Mapper(source any) models.Schedule
+	GeneralSchedule01(map[string]interface{}) models.Schedule01
 }
 
 type schedule01Mapper struct {
 }
 
-func (m schedule01Mapper) Schedule01Mapper(source any) models.Schedule {
-	var result models.Schedule
-	vMap, ok := source.(map[string]interface{})
-	if !ok {
-		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
-	}
-	for _, rec := range vMap["go"].([]interface{}) {
-		var current models.Schedule01
-		internalMapper(rec.(map[string]interface{}), &current)
-		result.Go = append(result.Go, current)
-	}
-	for _, rec := range vMap["come"].([]interface{}) {
-		var current models.Schedule01
-		internalMapper(rec.(map[string]interface{}), &current)
-		result.Come = append(result.Come, current)
-	}
+func (m schedule01Mapper) GeneralSchedule01(source map[string]interface{}) models.Schedule01 {
+	var result models.Schedule01
+	internalMapper(source, &result)
 	return result
 }
 
@@ -33,4 +20,8 @@ func (m schedule01Mapper) DtoToSchedule01(source models.Schedule01Dto) models.Sc
 	var target models.Schedule01
 	structMapper02(source, &target)
 	return target
+}
+
+func NewSchedule01Mapper() Schedule01Mapper {
+	return schedule01Mapper{}
 }

@@ -8,11 +8,6 @@ type OasaError struct {
 	//Retry       bool
 }
 
-type OasaResponse struct {
-	Error error
-	Data  any
-}
-
 func (e OasaError) Error() string {
 	return fmt.Sprintf("[%d] %s", e.Error_Code, e.Error_Descr)
 }

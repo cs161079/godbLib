@@ -10,13 +10,9 @@ type StopMapper interface {
 type stopMapper struct {
 }
 
-func (m stopMapper) StopMapper(source any) models.StopOasa {
+func (m stopMapper) GeneralStop(source map[string]interface{}) models.StopOasa {
 	var busStopOb models.StopOasa
-	vMap, ok := source.(map[string]interface{})
-	if !ok {
-		panic("Προέκυψε σφάλμα στην ανάλυση του αντικειμένου.")
-	}
-	internalMapper(vMap, &busStopOb)
+	internalMapper(source, &busStopOb)
 	return busStopOb
 }
 

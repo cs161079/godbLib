@@ -2,24 +2,27 @@ package repository
 
 import (
 	models "github.com/cs161079/godbLib/Models"
+	logger "github.com/cs161079/godbLib/Utils/goLogger"
 	"github.com/cs161079/godbLib/db"
 	"gorm.io/gorm"
 )
 
 type RouteRepository interface {
-	SelectByLineCode(int32) (*models.Route, error)
-	SelectRouteByLineCode(int32) (*[]models.Route, error)
-	InsertRoute(input models.Route) (*models.Route, error)
-	UpdateRoute(input models.Route) (*models.Route, error)
-	RouteList01() ([]models.Route, error)
-	DeleteRoute() error
+	SelectByCode(int32) (*models.Route, error)
+	SelectByLineCode(int32) (*[]models.Route, error)
+	Insert(models.Route) (*models.Route, error)
+	InsertArray([]models.Route) ([]models.Route, error)
+	Update(models.Route) (*models.Route, error)
+	List01() ([]models.Route, error)
+	WithTx(*gorm.DB) routeRepository
+	DeleteAll() error
 }
 
 type routeRepository struct {
 	DB *gorm.DB
 }
 
-func (r routeRepository) SelectByRouteCode(routeCode int32) (*models.Route, error) {
+func (r routeRepository) SelectByCode(routeCode int32) (*models.Route, error) {
 	var selectedVal models.Route
 	dbRes := r.DB.Table(db.ROUTETABLE).Where("route_code = ?", routeCode).Find(&selectedVal)
 	if dbRes != nil {
@@ -35,7 +38,7 @@ func (r routeRepository) SelectByRouteCode(routeCode int32) (*models.Route, erro
 	return &selectedVal, nil
 }
 
-func (r routeRepository) SelectRouteByLineCode(lineCode int32) (*[]models.Route, error) {
+func (r routeRepository) SelectByLineCode(lineCode int32) (*[]models.Route, error) {
 	var selectedVal []models.Route
 	res := r.DB.Table(db.ROUTETABLE).Where("line_code = ?", lineCode).Find(&selectedVal)
 	if res.Error != nil {
@@ -44,7 +47,7 @@ func (r routeRepository) SelectRouteByLineCode(lineCode int32) (*[]models.Route,
 	return &selectedVal, nil
 }
 
-func (r routeRepository) InsertRoute(input models.Route) (*models.Route, error) {
+func (r routeRepository) Insert(input models.Route) (*models.Route, error) {
 	res := r.DB.Table(db.ROUTETABLE).Create(&input)
 	if res.Error != nil {
 		return nil, res.Error
@@ -52,7 +55,7 @@ func (r routeRepository) InsertRoute(input models.Route) (*models.Route, error) 
 	return &input, nil
 }
 
-func (r routeRepository) UpdateRoute(input models.Route) (*models.Route, error) {
+func (r routeRepository) Update(input models.Route) (*models.Route, error) {
 	res := r.DB.Table(db.ROUTETABLE).Create(&input)
 	if res.Error != nil {
 		return nil, res.Error
@@ -60,32 +63,7 @@ func (r routeRepository) UpdateRoute(input models.Route) (*models.Route, error) 
 	return &input, nil
 }
 
-// NOTE: Αυτά πρέπει να μεταφερθούν στο Repository του RouteDetail
-// func (r routeRepository) SelecetDetailRouteCode(routeCode int32) (*models.RouteDetail, error) {
-// 	var selectedVal models.RouteDetail
-// 	r := DB.Table(ROUTEDETAILTABLE).Where("route_code = ?", routeCode).Find(&selectedVal)
-// 	if r != nil {
-// 		if r.Error != nil {
-// 			// fmt.Println(r.Error.Error())
-// 			return nil, r.Error
-// 		}
-// 		if r.RowsAffected == 0 {
-// 			//logger.WARN(fmt.Sprintf("BUS ROUTE NOT FOUND [ROUTE_CODE: %d]", routeCode))
-// 			return nil, nil
-// 		}
-// 	}
-// 	return &selectedVal, nil
-// }
-
-// func SaveRouteDetails(input models.RouteDetail) error {
-// 	r := DB.Table(ROUTEDETAILTABLE).Save(&input)
-// 	if r.Error != nil {
-// 		return r.Error
-// 	}
-// 	return nil
-// }
-
-func (r routeRepository) RouteList01() ([]models.Route, error) {
+func (r routeRepository) List01() ([]models.Route, error) {
 	var result []models.Route
 	res := r.DB.Table(db.ROUTETABLE).Order("route_code").Find(&result)
 	if res.Error != nil {
@@ -94,10 +72,32 @@ func (r routeRepository) RouteList01() ([]models.Route, error) {
 	return result, nil
 }
 
-func (r routeRepository) DeleteRoute() error {
+func (r routeRepository) DeleteAll() error {
 	if err := r.DB.Table(db.ROUTETABLE).Where("1=1").Delete(&models.Route{}).Error; err != nil {
 		//trans.Rollback()
 		return err
 	}
 	return nil
+}
+
+func (r routeRepository) WithTx(tx *gorm.DB) routeRepository {
+	if tx == nil {
+		logger.WARN("Database Tranction not exist.")
+		return r
+	}
+	r.DB = tx
+	return r
+}
+
+func (r routeRepository) InsertArray(entiryArr []models.Route) ([]models.Route, error) {
+	if err := r.DB.Table(db.ROUTETABLE).Save(entiryArr).Error; err != nil {
+		return nil, err
+	}
+	return entiryArr, nil
+}
+
+func NewRouteRepository(dbConnection *gorm.DB) RouteRepository {
+	return routeRepository{
+		DB: dbConnection,
+	}
 }

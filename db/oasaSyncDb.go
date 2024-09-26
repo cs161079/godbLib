@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
 	"strconv"
@@ -15,14 +14,14 @@ import (
 	"gorm.io/gorm"
 )
 
-type Connection interface {
-	GetStatistics() (*sql.DBStats, error)
-	GetConnection() *connection
-}
+// type Connection interface {
+// 	GetStatistics() (*sql.DBStats, error)
+// 	GetConnection() *connection
+// }
 
-type connection struct {
-	DB *gorm.DB
-}
+// type connection struct {
+// 	DB *gorm.DB
+// }
 
 type Datasource interface {
 	DatasourceUrl() (string, error)
@@ -43,14 +42,19 @@ func (ds datasource) DatasourceUrl() string {
 }
 
 const (
+	// *ΓΙΑ ΤΙΣ ΜΕΤΑΒΛΗΤΕΣ ΠΟΥ ΔΙΑΜΟΙΡΑΖΟΜΑΙ ΜΕΣΩ CONTEXT *
+	CONNECTIONVAR = "db_conn"
+	//*****************************************************
+	// ****** ΟΝΟΜΑΤΑ ΠΙΝΑΚΩΝ ΣΤΗΝ ΒΑΣΗ ΔΕΔΟΜΕΝΩΝ *********
 	LINETABLE           = "line"
 	ROUTETABLE          = "route"
 	STOPTABLE           = "stop"
-	ROUTESTOPSTABLE     = "routestops"
-	SCHEDULEMASTERTABLE = "schedulemaster"
-	SCHEDULETIMETABLE   = "scheduletime"
+	ROUTESTOPSTABLE     = "route02"
+	SCHEDULEMASTERTABLE = "schedule"
+	SCHEDULETIMETABLE   = "schedule01"
 	ROUTEDETAILTABLE    = "routedetail"
 	SYNCVERSIONSTABLE   = "syncversionstable"
+	// ****************************************************
 )
 
 const dataSourceFormat = "%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=true&loc=Local"
@@ -101,8 +105,7 @@ func createDataSource() (*datasource, error) {
 
 // This is core for DB
 
-func CreateConnection() (*Connection, error) {
-	var vConnection connection = connection{}
+func CreateConnection() (*gorm.DB, error) {
 	dataSource, err := createDataSource()
 	if err != nil {
 		return nil, err
@@ -117,7 +120,7 @@ func CreateConnection() (*Connection, error) {
 		SkipInitializeWithVersion: false,                      // auto configure based on currently MySQL version
 	})
 
-	vConnection.DB, err = gorm.Open(dialector, &gorm.Config{
+	db, err := gorm.Open(dialector, &gorm.Config{
 		Logger: logger.GetGormLogger(),
 	})
 
@@ -126,27 +129,13 @@ func CreateConnection() (*Connection, error) {
 		return nil, err
 	}
 
-	sqlDb, err := vConnection.DB.DB()
+	sqlDb, err := db.DB()
 	if err != nil {
-		// fmt.Println("An Error Occured... ", err.Error())
 		return nil, err
 	}
 	sqlDb.SetMaxIdleConns(5)
 	sqlDb.SetConnMaxLifetime(time.Minute)
 	sqlDb.SetMaxOpenConns(5)
 
-	return &vConnection, nil
-}
-
-func (c connection) GetStatistics() (*sql.DBStats, error) {
-	vSql, err := c.DB.DB()
-	if err != nil {
-		return nil, err
-	}
-	result := vSql.Stats()
-	return &result, nil
-}
-
-func (c connection) GetConnection() *connection {
-	return &c
+	return db, nil
 }
