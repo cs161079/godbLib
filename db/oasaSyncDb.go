@@ -52,8 +52,8 @@ const (
 	ROUTESTOPSTABLE     = "route02"
 	SCHEDULEMASTERTABLE = "schedule"
 	SCHEDULETIMETABLE   = "schedule01"
-	ROUTEDETAILTABLE    = "routedetail"
-	SYNCVERSIONSTABLE   = "syncversionstable"
+	ROUTEDETAILTABLE    = "route01"
+	SYNCVERSIONSTABLE   = "syncversions"
 	// ****************************************************
 )
 

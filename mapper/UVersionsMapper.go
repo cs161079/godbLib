@@ -9,7 +9,10 @@ type UversionMapper interface {
 
 type uversionMapper struct{}
 
-func GeneralUVersions(source any) models.UVersionsOasa {
+func NewUVersionMapper() UversionMapper {
+	return uversionMapper{}
+}
+func (m uversionMapper) GeneralUVersions(source any) models.UVersionsOasa {
 	var oasaOb models.UVersionsOasa
 	vMap, ok := source.(map[string]interface{})
 	if !ok {
@@ -20,7 +23,7 @@ func GeneralUVersions(source any) models.UVersionsOasa {
 	return oasaOb
 }
 
-func OasaToUVersions(source models.UVersionsOasa) models.UVersions {
+func (m uversionMapper) OasaToUVersions(source models.UVersionsOasa) models.UVersions {
 	var target models.UVersions
 	structMapper02(source, &target)
 	return target

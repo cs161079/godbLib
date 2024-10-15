@@ -2,6 +2,7 @@ package service
 
 import (
 	models "github.com/cs161079/godbLib/Models"
+	"github.com/cs161079/godbLib/mapper"
 	"github.com/cs161079/godbLib/repository"
 	"gorm.io/gorm"
 )
@@ -14,12 +15,18 @@ type RouteService interface {
 	InsertArray([]models.Route) ([]models.Route, error)
 	Route02Insert(models.Route02) (*models.Route02, error)
 	Route02InsertArr([]models.Route02) ([]models.Route02, error)
+	Route01InsertArr([]models.Route01) ([]models.Route01, error)
+	DeleteRoute01() error
 	DeleteRoute02() error
+	List01() ([]models.Route, error)
+	GetMapper01() mapper.Route01Mapper
 }
 
 type routeService struct {
-	repo   repository.RouteRepository
-	repo02 repository.Route02Repository
+	repo     repository.RouteRepository
+	repo02   repository.Route02Repository
+	repo01   repository.Route01Repository
+	mapper01 mapper.Route01Mapper
 }
 
 func (s routeService) WithTrx(trxHandle *gorm.DB) routeService {
@@ -83,9 +90,27 @@ func (s routeService) InsertArray(entityArr []models.Route) ([]models.Route, err
 	return s.repo.InsertArray(entityArr)
 }
 
+func (s routeService) Route01InsertArr(entityArr []models.Route01) ([]models.Route01, error) {
+	return s.repo01.InsertRoute01Arr(entityArr)
+}
+
+func (s routeService) List01() ([]models.Route, error) {
+	return s.repo.List01()
+}
+
+func (s routeService) GetMapper01() mapper.Route01Mapper {
+	return s.mapper01
+}
+
+func (s routeService) DeleteRoute01() error {
+	return s.repo01.Delete()
+}
+
 func NewRouteService(db *gorm.DB) RouteService {
 	return routeService{
-		repo:   repository.NewRouteRepository(db),
-		repo02: repository.NewRoute02Repository(db),
+		repo:     repository.NewRouteRepository(db),
+		repo02:   repository.NewRoute02Repository(db),
+		repo01:   repository.NewRoute01Repository(db),
+		mapper01: mapper.NewRouteDetailMapper(),
 	}
 }

@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"context"
-
 	models "github.com/cs161079/godbLib/Models"
 	logger "github.com/cs161079/godbLib/Utils/goLogger"
 	"github.com/cs161079/godbLib/db"
@@ -12,7 +10,8 @@ import (
 type UVersionRepository interface {
 	Create(entity *models.UVersions) error
 	Update(entity *models.UVersions) error
-	SelectAll(ctx context.Context) ([]models.UVersions, error)
+	SelectAll() ([]models.UVersions, error)
+	Select(string) (*models.UVersions, error)
 	WithTx(*gorm.DB) uVersionRepository
 }
 
@@ -21,7 +20,7 @@ type uVersionRepository struct {
 }
 
 // // withTx creates a new repository instance with the given transaction
-func (r uVersionRepository) withTx(tx *gorm.DB) uVersionRepository {
+func (r uVersionRepository) WithTx(tx *gorm.DB) uVersionRepository {
 	if tx == nil {
 		logger.WARN("Database transaction does not exist.")
 		return r
@@ -48,4 +47,17 @@ func (r uVersionRepository) SelectAll() ([]models.UVersions, error) {
 // // Create adds a new entity to the database
 func (r uVersionRepository) Create(entity *models.UVersions) error {
 	return r.DB.Create(entity).Error
+}
+
+func (r uVersionRepository) Select(uVersion string) (*models.UVersions, error) {
+	var resultRec models.UVersions = models.UVersions{}
+	dbRes := r.DB.Table("syncversions").Where("uv_descr=?", uVersion).Find(&resultRec)
+	if dbRes.Error != nil {
+		return nil, dbRes.Error
+	}
+	return &resultRec, nil
+}
+
+func NewUversionRepository(db *gorm.DB) UVersionRepository {
+	return uVersionRepository{DB: db}
 }
